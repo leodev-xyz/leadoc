@@ -10,10 +10,6 @@ with io.open file, "r"
     content = \read "*a"
     \close!
 
-if ".yue" == file\sub -4, -1
-    import to_lua from require "yue"
-    content  = to_lua content
-
 doc = doc (load content)!, fmt
 
 export json = stringify doc.tree

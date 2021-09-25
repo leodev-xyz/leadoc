@@ -14,7 +14,7 @@ out.mkdir(exist_ok=True)
 
 input = Path("docs")
 for file in input.iterdir():
-    if file.suffix == ".yue" and not file.stem.startswith("."):
+    if file.suffix == ".lua" and not file.stem.startswith("."):
         doc = make_doc(f"docs/{file.name}", True)
         o = out / file.stem
         o.mkdir(exist_ok=True)
