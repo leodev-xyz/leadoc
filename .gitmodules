@@ -1,0 +1,3 @@
+[submodule ".cf/yuescript-wasm"]
+	path = .cf/yuescript-wasm
+	url = https://github.com/leodev-xyz/yuescript-wasm

@@ -1,0 +1,148 @@
+-- Based off of JSON lib from https://gist.github.com/tylerneylon/59f4bcf316be525b30ab
+
+-- New Features:
+--    + It's in yuescript
+--    + Faster (using fast arrays) (avoids #)
+--    + Support for json.null in stringify
+--    + Ignores "n" for arrays (fast array support)
+--    + {n: 0} is recognized as array and stringified to "[]"
+
+import fast_push from require "leadoc.util"
+
+json = {}
+
+
+-- Internal functions.
+
+in_char  = {"\\", "\"", "/", "\b", "\f", "\n", "\r", "\t"}
+out_char = {"\\", "\"", "/",  "b",  "f",  "n",  "r",  "t"}
+literals = {true: true, false: false, null: json.null}
+
+
+kind_of = =>
+    return type @ if "table" != type @
+    i = 1
+    for key in pairs @
+        continue if key == "n"
+        return "table" unless @[i]?
+        i += 1
+
+    return i == 1 and not @n? and "table" or "array"
+
+escape_str = =>
+    for i, c in ipairs in_char
+        @ = @gsub c, "\\" .. out_char[i]
+    @
+
+-- Returns pos, did_find; there are two cases:
+-- 1. Delimiter found: pos = pos after leading space + delim; did_find = true.
+-- 2. Delimiter not found: pos = pos after leading space;     did_find = false.
+-- This throws an error if err_if_missing is true and the delim is not found.
+skip_delim = (str, pos, delim, err_if_missing) ->
+    pos = pos + #str\match "^%s*", pos
+    if delim != str\sub pos, pos
+        error "Expected #{delim} near position #{pos}" if err_if_missing
+        return pos, false
+    return pos + 1, true
+
+-- Expects the given pos to be the first character after the opening quote.
+-- Returns val, pos; the returned pos is after the closing quote character.
+parse_str_val = (str, pos, val = "") ->
+  early_end_error = "End of input found while parsing string."
+  error early_end_error if pos > #str
+  c = str\sub pos, pos
+  return val, pos + 1 if c == '"'
+  return parse_str_val str, pos + 1, val .. c  if c != "\\"
+  -- We must have a \ character.
+  esc_map = {b: "\b", f: "\f", n: "\n", r: "\r", t: "\t"}
+  nextc = str\sub pos + 1, pos + 1
+  error early_end_error unless nextc?
+  parse_str_val str, pos + 2, val .. (esc_map[nextc] or nextc)
+
+
+-- Returns val, pos; the returned pos is after the number's final character.
+parse_num_val = (str, pos) ->
+  num_str = str\match "^-?%d+%.?%d*[eE]?[+-]?%d*", pos
+  val = tonumber num_str
+  error "Error parsing number at position #{pos}." unless val?
+  val, pos + #num_str
+
+
+-- Public values and functions.
+
+json.stringify = (obj, as_key) ->
+    if json.null == obj or not obj?
+        error "Can't encode null as key." if as_key
+        return "null"
+    kind = kind_of obj  -- This is 'array' if it's an array or type(obj) otherwise.
+    return switch kind
+        when "array"
+            error "Can't encode array as key." if as_key
+            s = {n: 0}
+            fast_push s, "["
+            for val in *obj
+                fast_push s, ", " if s.n > 1
+                fast_push s, json.stringify val
+            fast_push s, "]"
+            table.concat s
+        when "table"
+            error "Can't encode array as key." if as_key
+            s = {n: 0}
+            fast_push s, "{"
+            for k, v in pairs obj
+                fast_push s, ", " if s.n > 1
+                fast_push s, json.stringify k, true
+                fast_push s, ":"
+                fast_push s, json.stringify v
+            fast_push s, "}"
+            table.concat s
+        when "string" then "\"#{escape_str obj}\""
+        when "number"
+            as_key and "\"#{obj}\"" or "#{obj}"
+        when "boolean" then tostring obj
+        else
+            error "Unjsonifiable type: #{kind}."
+
+json.null = {}  -- This is a one-off table to represent the null value.
+
+json.parse = (str, pos = 1, end_delim) ->
+    error "Reached unexpected end of input." if pos > #str
+    pos = pos + #str\match "^%s*", pos  -- Skip whitespace.
+    first = str\sub pos, pos
+    switch first
+        when "{"  -- Parse an object.
+            obj, key, delim_found = {}, true, true
+            pos = pos + 1
+            while true
+                key, pos = json.parse str, pos, "}"
+                return obj, pos unless key?
+                error "Comma missing between object items." unless delim_found
+                pos = skip_delim str, pos, ":", true  -- true -> error if missing.
+                obj[key], pos = json.parse str, pos
+                pos, delim_found = skip_delim str, pos, ","
+        when "["  -- Parse an array.
+            arr, val, delim_found = {n: 0}, true, true
+            pos = pos + 1
+            while true do
+                val, pos = json.parse str, pos, "]"
+                break unless val?
+                error "Comma missing between array items." unless delim_found
+                fast_push arr, val
+                pos, delim_found = skip_delim str, pos, ","
+            arr.n = nil
+            return arr, pos
+        when '"'  -- Parse a string.
+            return parse_str_val str, pos + 1
+        else
+            if "-" or first\match "%d"  -- Parse a number.
+                return parse_num_val str, pos
+            elseif first == end_delim  -- End of an object or array.
+                return nil, pos + 1
+            else  -- Parse true, false, or null.
+                for lit_str, lit_val in pairs literals
+                    lit_end = pos + #lit_str - 1
+                    return lit_val, lit_end + 1 if lit_str == str\sub pos, lit_end
+                error "Invalid json syntax starting at position #{pos}: #{str\sub pos, pos + 10}"
+
+
+export default json

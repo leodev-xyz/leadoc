@@ -1,0 +1,378 @@
+
+import "leadoc.doc" as leadoc
+import "leadoc.converter.markdown" as convert_markdown
+import "leadoc.validate.lua" as validate_lua
+import "leadoc.find"
+import "leadoc.json"
+-- import "leadoc.lint"
+import fast_push, fast_peek, fast_pop, fast_del, fast_iter, fast_extend from require "leadoc.util"
+
+
+import describe, it, expect, report, exit from require "lester"
+
+
+describe "leadoc", ->
+    describe "doc", ->
+        describe "section", ->
+            it "section", ->
+                doc = leadoc.doc => @section "test"
+                expect.equal doc.tree[1].type, "section"
+                expect.equal doc.tree[1].data.name, "test"
+                expect.equal doc.tree[1].tree.n, 0
+                expect.equal doc.tree.n, 1
+
+            it "section errors as child of function", ->
+                expect.fail(
+                    ->
+                        leadoc.doc => @function "test", -> @section "test",
+                    "section cannot be a descendent of function"
+                )
+
+        describe "namespace", ->
+            it "namespace", ->
+                doc = leadoc.doc => @namespace "test"
+                expect.equal doc.tree[1].type, "namespace"
+                expect.equal doc.tree[1].data.name, "test"
+            
+            it "namespace with description", ->
+                doc = leadoc.doc => @namespace "test", -> @description "test"
+                expect.equal doc.tree[1].data.description, "test"
+
+
+        describe "function", ->
+            it "function", ->
+                doc = leadoc.doc => @function "test"
+                expect.equal doc.tree[1].type, "function"
+                expect.equal doc.tree[1].data.name, "test"
+                expect.equal doc.tree[1].data.arguments.n, 0
+
+            it "function with arguments", ->
+                doc = leadoc.doc => @function "test", -> @arg "test", "test"
+                expect.equal doc.tree[1].type, "function"
+                expect.equal doc.tree[1].data.name, "test"
+                expect.equal doc.tree[1].data.arguments.n, 1
+                expect.equal doc.tree[1].data.arguments[1].name, "test"
+                expect.equal doc.tree[1].data.arguments[1].type.type, "test"
+
+            it "function returns", ->
+                doc = leadoc.doc => @function "test", -> @returns "test"
+                expect.equal doc.tree[1].type, "function"
+                expect.equal doc.tree[1].data.name, "test"
+                expect.equal doc.tree[1].data.arguments.n, 0
+                expect.equal doc.tree[1].data.returns.type.type, "test"
+
+        describe "class", ->
+            it "class", ->
+                doc = leadoc.doc => @class "test"
+                expect.equal doc.tree[1].type, "class"
+                expect.equal doc.tree[1].data.name, "test"
+        
+        describe "variable", ->
+            it "variable", -> 
+                doc = leadoc.doc => @variable "test"
+                expect.equal doc.tree[1].type, "variable"
+                expect.equal doc.tree[1].data.name, "test"
+            
+            it "variable with type", ->
+                doc = leadoc.doc => @variable "test", -> @type "test"
+                expect.equal doc.tree[1].type, "variable"
+                expect.equal doc.tree[1].data.name, "test"
+                expect.equal doc.tree[1].data.type.type.type, "test"
+
+        describe "flag", ->
+            it "global flag", ->
+                doc = leadoc.doc => @flag "test"
+                expect.equal doc.flags, {test: true}
+            
+            it "namespace flag", ->
+                doc = leadoc.doc => @namespace "test", -> @flag "test"
+                expect.equal doc.tree[1].flags, {test: true}
+
+        it "global description fail", ->
+            expect.fail (-> leadoc.doc => @description "test"), "description must be a descenedet of something"
+                
+
+    describe "fmt", ->
+        it "reference", ->
+            reference = leadoc.fmt.reference "test1", "test2"
+            expect.equal reference.kind, "reference"
+            expect.equal reference.ref, "test1"
+            expect.equal reference.inner, {"test2"}
+
+        for kind in *{"bold", "italic", "code", "info", "warn", "danger"}
+            it kind, ->
+                obj = leadoc.fmt[kind] "test1", "test2"
+                expect.equal obj.kind, kind
+                expect.equal obj.inner, {"test1", "test2"}
+
+        it "link", ->
+            link = leadoc.fmt.link "https://example.com", "test"
+            expect.equal link.kind, "link"
+            expect.equal link.href, "https://example.com"
+            expect.equal link.inner, {"test"}
+        
+        it "type", ->
+            type = leadoc.fmt.type "test"
+            expect.equal type.kind, "type"
+            expect.equal type.type, {type: "test", array: false, optional: false}
+        
+        it "header", ->
+            header = leadoc.fmt.header 2, "test"
+            expect.equal header.kind, "header"
+            expect.equal header.level, 2
+            expect.equal header.inner, {"test"}
+
+        it "codeblock", ->
+            codeblock = leadoc.fmt.codeblock "lua", "test"
+            expect.equal codeblock.kind, "codeblock"
+            expect.equal codeblock.language, "lua"
+            expect.equal codeblock.inner, {"test"}
+
+    describe "type parser", ->
+        it "simple", ->
+            type = leadoc.parse_type "test"
+            expect.equal type, {type: "test", array: false, optional: false}
+        
+        it "optional", ->
+            type = leadoc.parse_type "?test"
+            expect.equal type, {type: "test", array: false, optional: true}
+
+            type = leadoc.parse_type "test?"
+            expect.equal type, {type: "test?", array: false, optional: false}
+        
+        it "optional with spaces", ->
+            type = leadoc.parse_type "     ?   test                   "
+            expect.equal type, {type: "test", array: false, optional: true}
+        
+        it "array of one type", ->
+            type = leadoc.parse_type "[]test"
+            expect.equal type, {type: "test", array: true, optional: false}
+        
+        it "one type array and optional", ->
+            type = leadoc.parse_type "?[]test"
+            expect.equal type, {type: "test", array: true, optional: true}
+
+            type = leadoc.parse_type "[]?test"
+            expect.equal type, {type: "?test", array: true, optional: false}
+
+        it "array with multiple types", ->
+            type = leadoc.parse_type "[test1, test2]"
+            expect.equal type, {type: {{type: "test1", array: false, optional: false}, {type: "test2", array: false, optional: false}}, array: false, optional: false}
+        
+        it "array with multiple advanced types", ->
+            type = leadoc.parse_type "[[]test1, ?test2]"
+            expect.equal type, {type: {{type: "test1", array: true, optional: false}, {type: "test2", array: false, optional: true}}, array: false, optional: false}
+
+        it "array of array with multiple types", ->
+            type = leadoc.parse_type "[][test1, test2]"
+            expect.equal type, {type: {{type: "test1", array: false, optional: false}, {type: "test2", array: false, optional: false}}, array: true, optional: false}
+
+    describe "validate", ->
+        it "validate", ->
+            doc = leadoc.doc =>
+                @namespace "test", ->
+                    @function "testf_1"
+                    @function "testf_2"
+                    @function "testf_3"
+                    @variable "testv_1"
+                    @variable "testv_2", ->
+                        @type "string"
+                    @variable "testv_3", ->
+                        @type "number"
+                    @variable "testv_4"
+                    @function "not_checked", ->
+                        @flag "dont_validate"
+                @namespace "test2", ->
+                    @flag "dont_validate"
+                    @function "not_checked"
+            
+            local result
+            env = {
+                index#: _G
+                test: {
+                    testf_1: ->
+                    testf_2: "test"
+                    -- test_f_3
+                    testv_1: true
+                    testv_2: "test"
+                    testv_3: "test"
+                    -- testv_4
+                    undocumented: true
+                }
+                print: => result = @
+            }
+            env._G = env
+
+            code = validate_lua doc.tree
+
+            local code_fn
+            if setfenv  -- Lua 5.1
+                code_fn = loadstring code
+                setfenv code_fn, env
+            else -- Lua 5.2+
+                code_fn = load code, "<sandboxed validate.lua>", "bt", env
+            
+            code_fn!
+            output = [x for x in result\gmatch "[^\n]+"]
+            expected = {
+                "TYPE MISMATCH: test.testf_2 (expected: function, got: string)"
+                "TYPE MISMATCH: test.testf_3 (expected: function, got: nil)"
+                "TYPE MISMATCH: test.testv_3 (expected: number, got: string)"
+                "UNDOCUMENTED: test.undocumented (type: boolean)"
+            }
+            expect.equal expected, output
+
+    describe "json", ->
+        describe "stringify", ->
+            it "json.null", ->
+                encoded = json.stringify test: json.null
+                expect.equal encoded, '{"test":null}'
+            
+            it "fast arrays", ->
+                array = {n: 0}
+                fast_push array, "test 1"
+                fast_push array, "test 2"
+                fast_push array, "test 3"
+
+                encoded = json.stringify array
+                expect.equal encoded, '["test 1", "test 2", "test 3"]'
+            
+            it "empty array", ->
+                encoded = json.stringify n: 0
+                expect.equal encoded, "[]"
+
+                encoded = json.stringify {}
+                expect.equal encoded, "{}"
+            
+            it "mixed array and object", ->
+                object = {
+                    "test 1"
+                    "test 2"
+                    "test 3"
+                    n: 3
+                    test: "test"
+                }
+
+                encoded = json.stringify object
+                -- order can be arbitrary
+                expected = {k, true for k in *{
+                    '"1":"test 1"'
+                    '"2":"test 2"'
+                    '"3":"test 3"'
+                    '"n":3'
+                    '"test":"test"'
+                }}
+                for pair in (encoded\sub 2, -2)\gmatch "[^,]+"
+                    pair = pair\sub 1 + #pair\match "%s*"  -- remove whitespace
+                    expect.truthy expected[pair]
+                    expected[pair] = nil
+                
+                expect.equal expected, {}
+
+    describe "fast arrays", ->
+        it "push", ->
+            array = {n: 0}
+            fast_push array, "test 1"
+            fast_push array, "test 2"
+            fast_push array, "test 3"
+            expect.equal array, {"test 1", "test 2", "test 3", n: 3}
+        
+        it "peek", ->
+            array = {n: 0}
+            expect.falsy fast_peek array
+            fast_push array, "test 1"
+            expect.equal "test 1", fast_peek array
+            fast_push array, "test 2"
+            expect.equal "test 2", fast_peek array
+            fast_push array, "test 3"
+            expect.equal "test 3", fast_peek array
+            expect.equal array, {"test 1", "test 2", "test 3", n: 3}
+
+        it "pop", ->
+            array = {n: 0}
+            fast_push array, "test 1"
+            expect.equal array, {"test 1", n: 1}
+            expect.equal "test 1", fast_pop array
+            expect.equal array, {n: 0}
+
+            fast_push array, "test 1"
+            fast_push array, "test 2"
+            fast_push array, "test 3"
+            expect.equal "test 3", fast_pop array
+            expect.equal array, {"test 1", "test 2", n: 2}
+            expect.equal "test 2", fast_pop array
+
+        it "del", ->
+            array = {n: 0}
+            fast_push array, "test 1"
+            expect.equal array, {"test 1", n: 1}
+            expect.falsy fast_del array
+            expect.equal array, {n: 0}
+
+            fast_push array, "test 1"
+            fast_push array, "test 2"
+            fast_push array, "test 3"
+            expect.falsy fast_del array
+            expect.equal array, {"test 1", "test 2", n: 2}
+        
+        it "iter", ->
+            array = {"test 1", "test 2", "test 3", n: 3}
+            i = 1
+            for x in fast_iter array
+                expect.equal array[i], x
+                i += 1
+            expect.equal i, 4
+        
+        it "iter with limit", ->
+            array = {"test 1", "test 2", "test 3", n: 2}
+            i = 1
+            for x in fast_iter array
+                expect.equal array[i], x
+                i += 1
+            expect.equal i, 3
+        
+        it "extend", ->
+            array = {"test 1", "test 2", "test 3", n: 3}
+            array2 = {"test 4", "test 5", "test 6", n: 3}
+
+            fast_extend array, array2
+            expect.equal array, {"test 1", "test 2", "test 3", "test 4", "test 5", "test 6", n: 6}
+
+    describe "find", ->
+        describe "flag", ->
+            it "any value", ->
+                local test, test2
+                doc = leadoc.doc =>
+                    @namespace "test", ->
+                        test = @function "test", ->
+                            @flag "test"
+                        test2 = @function "test2", ->
+                            @flag "test2"
+                
+                results = find.find_flag doc, "test"
+                expect.equal results, {test.id, n: 1}
+
+                results = find.find_flag doc, "test2"
+                expect.equal results, {test2.id, n: 1}
+            
+            it "specific value", ->
+                local test, test2
+                doc = leadoc.doc =>
+                    @namespace "test", ->
+                        test = @function "test", ->
+                            @flag "test", "veryspecific"
+                        test2 = @function "test2", ->
+                            @flag "test"
+                
+                results = find.find_flag doc, "test", "veryspecific"
+                expect.equal results, {test.id, n: 1}
+
+                results = find.find_flag doc, "test", true
+                expect.equal results, {test2.id, n: 1}
+
+                results = find.find_flag doc, "test"
+                expect.equal results, {test.id, test2.id, n: 2}
+
+
+report!
+exit!
