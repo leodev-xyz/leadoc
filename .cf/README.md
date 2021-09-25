@@ -8,5 +8,5 @@ That's why I use lupa.
 
 ## Enviroment variables
 
-`NODE_VERSION`: `14`
-`PYTHON_VERSION`: `3.9`
+- `NODE_VERSION`: `14`
+- `PYTHON_VERSION`: `3.7` (latest supported version)
