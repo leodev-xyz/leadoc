@@ -3,5 +3,5 @@
 
 build:
 	node .cf/yuescript-build.js `find . -name "*.yue"`
-	pip3.9 install lupa
-	python3.9 .cf/build.py
+	pip3 install lupa
+	python3 .cf/build.py
