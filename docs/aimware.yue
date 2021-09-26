@@ -51,7 +51,7 @@ export default (fmt) =>
                 @description {
                     "Returns the player resources entity. (useful for accessing the "
                     fmt.code "CCSPlayerResource"
-                    "props)"
+                    " props)"
                 }
         
         @namespace "client", ->
