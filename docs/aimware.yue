@@ -97,7 +97,7 @@ export default (fmt) =>
                 }
             
             @function "GetPlayerNameByUserID", ->
-                @arg "userid", "inintegert"
+                @arg "userid", "integer"
                 @returns "?string"
                 @description {
                     "Returns the name of the player." .. fmt.eol
