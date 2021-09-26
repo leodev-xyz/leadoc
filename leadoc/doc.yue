@@ -88,7 +88,7 @@ export class Documentation
     _factory_section: (tos, name) => :name
     _factory_namespace: (tos, name) => :name
     _factory_function: (tos, name) => :name, arguments: {n: 0}
-    _factory_class: (tos, name) => :name
+    _factory_class: (tos, name) => :name, arguments: {n: 0}
     _factory_variable: (tos, name) => :name
 
     _factory_type: (tos, type) =>
