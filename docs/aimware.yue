@@ -1160,7 +1160,7 @@ export default (fmt) =>
                     @type "number"
             
             for fn in *{"Clear", "Forward", "Normalize", "Right", "Up"}
-                @function var, ->
+                @function fn, ->
                     @flag "todo"
 
         @class "Trace", ->
