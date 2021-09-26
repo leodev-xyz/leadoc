@@ -92,7 +92,7 @@ export default (fmt) =>
                 @returns "?string"
                 @description {
                     "Returns the name of the player." .. fmt.eol
-                    "Roughl equivalent to: " .. fmt.eol
+                    "Roughly equivalent to: " .. fmt.eol
                     fmt.codeblock "lua", "entities.GetByIndex(index):GetName()"
                 }
             
@@ -101,7 +101,7 @@ export default (fmt) =>
                 @returns "?string"
                 @description {
                     "Returns the name of the player." .. fmt.eol
-                    "Roughl equivalent to: " .. fmt.eol
+                    "Roughly equivalent to: " .. fmt.eol
                     fmt.codeblock "lua", "entities.GetByUserID(index):GetName()"
                 }
             
