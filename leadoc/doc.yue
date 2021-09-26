@@ -90,6 +90,7 @@ export class Documentation
     _factory_function: (tos, name) => :name, arguments: {n: 0}
     _factory_class: (tos, name) => :name, arguments: {n: 0}
     _factory_variable: (tos, name) => :name
+    _factory_text: (tos, text) => :text
 
     _factory_type: (tos, type) =>
         error "cannot have multiple types", 2 if tos.data.type?
@@ -103,7 +104,6 @@ export class Documentation
     _factory_description: (tos, description) =>
         error "cannot have multiple descriptions", 2 if tos.data.description?
         tos.data.description = description
-    _factory_text: (tos, text) => :text
 
     section: (name, fn) => @_factory "section", fn, name
     namespace: (name, fn) => @_factory "namespace", fn, name
