@@ -1,0 +1,43 @@
+
+import find_flag from require "leadoc.find"
+import fast_push, fast_extend, expect_type, print_tbl from require "leadoc.util"
+
+
+-- DISCONTINUED
+
+markdown = (doc) =>
+    return @ if "string" == type @
+    return table.concat [markdown x, doc for x in *@], "" unless @kind
+
+    inner = markdown @inner, doc
+    switch @kind
+        when "reference"
+            ref = @ref
+            ref = {ref, n: 1} if "string" == type ref
+            ref.n = #ref unless ref.n?
+            if "!" == ref[1]\sub 1, 1
+                expect_type 2, doc, "table"
+                refname = ref[1]\sub 2
+                matching_ids = find_flag doc, "ref", refname
+                error "unable to find exactly one reference for #{refname}" if matching_ids.n != 1
+                path = [doc.ids[x].data.name for x in *doc.ids[matching_ids[1]].stack when doc.ids[x].data? and doc.ids[x].data.name?]
+                path.n = #path
+                fast_push path, doc.ids[matching_ids[1]].data.name if doc.ids[matching_ids[1]].data? and doc.ids[matching_ids[1]].data.name?
+                rest = [x for x in *ref[2,]]
+                rest.n = #rest
+                fast_extend path, rest
+                ref = path
+            "[#{inner}](##{(table.concat ref, " ")\gsub "[^%w_]+", "-"})"
+        when "link" then "[#{inner or @href}](#{@href})"
+        when "type" then "[]"
+        when "header" then "#{"#"\rep @level} #{inner}"
+        when "bold" then "**#{inner}**"
+        when "italic" then "_#{inner}_"
+        when "code" then "`#{inner}`"
+        when "codeblock" then "```#{@language}\n#{inner}\n```"
+        when "info" then "> **Info**: #{inner}"
+        when "warn" then "> **Warning**: #{inner}"
+        when "danger" then "> **Danger**: #{inner}"
+        else error "unexpected kind: #{@kind}"
+
+export default markdown
