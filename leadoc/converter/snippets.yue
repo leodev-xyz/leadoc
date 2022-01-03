@@ -20,7 +20,7 @@ type_to_string = =>
     optional = @optional and "?" or ""
     prefix = @array and "[]" or ""
     content = @type
-    content = "[" + table.concat([type_to_string t for t in *content], ", ") + "]" if "table" == type content
+    content = "[" .. table.concat([type_to_string t for t in *content], ", ") .. "]" if "table" == type content
     "#{optional}#{prefix}#{content}"
 
 description_to_string = =>

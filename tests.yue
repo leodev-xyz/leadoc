@@ -380,6 +380,7 @@ describe "leadoc", ->
                     @function "test", ->
                         @arg "test", "string"
                         @arg "test2", "[]number"
+                        @arg "test3", "[number, number]"
                         @returns "string"
                     @variable "test2", ->
                         @type "string"
@@ -390,8 +391,8 @@ describe "leadoc", ->
             result = snippets.generate_snippet doc, snippets.configs.lua
             expect.equal result, {
                 testtest: {
-                    prefix: "test.test(test: string, test2: []number): string"
-                    body: "test.test(test, test2)"
+                    prefix: "test.test(test: string, test2: []number, test3: [number, number]): string"
+                    body: "test.test(test, test2, test3)"
                     description: ""
                     scope: "lua"
                 }
