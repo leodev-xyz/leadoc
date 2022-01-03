@@ -1,6 +1,6 @@
 
 import find_flag from require "leadoc.find"
-import fast_push, fast_peek, fast_del, fast_iter, deep_copy, flatten_tree, expect_type from require "leadoc.util"
+import fast_push, fast_peek, fast_del, fast_iter, fast_clone, deep_copy, flatten_tree, expect_type from require "leadoc.util"
 
 
 possible_parents = {
@@ -60,8 +60,7 @@ export parse_type = =>
     @ = @sub 2 if is_optional
 
     is_arrtype = "[]" == @sub 1, 2
-    if is_arrtype
-        @ = @sub 3
+    @ = @sub 3 if is_arrtype
 
     if ("[" == @sub 1, 1) and ("]" == @sub #@)
         @ = @sub 2, #@ - 1
@@ -131,7 +130,7 @@ export class Documentation
         fdata = @["_factory_#{type}"] @, tos, ...
         data = {
             :type
-            stack: [x for x in fast_iter @stack]
+            stack: fast_clone @stack
             tree: {n: 0}
             data: fdata
             flags: {}

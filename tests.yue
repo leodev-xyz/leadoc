@@ -1,5 +1,6 @@
 
 import "leadoc.doc" as leadoc
+import "leadoc.converter.snippets"
 import "leadoc.validate.lua" as validate_lua
 import "leadoc.find"
 import "leadoc.json"
@@ -372,6 +373,35 @@ describe "leadoc", ->
                 results = find.find_flag doc, "test"
                 expect.equal results, {test.id, test2.id, n: 2}
 
+    describe "converter", ->
+        it "snippets", ->
+            doc = leadoc.doc =>
+                @namespace "test", ->
+                    @function "test", ->
+                        @arg "test", "string"
+                        @arg "test2", "[]number"
+                        @returns "string"
+                    @variable "test2", ->
+                        @type "string"
+                @namespace "test2", ->
+                    @flag "dont_include_in_snippet"
+                    @function "not_included"
+            
+            result = snippets.generate_snippet doc, "lua", snippets.configs.lua
+            expect.equal result, {
+                testtest: {
+                    prefix: "test.test(test: string, test2: []number): string"
+                    body: "test.test(test, test2)"
+                    description: ""
+                    scope: "lua"
+                }
+                testtest2: {
+                    prefix: "test.test2: string"
+                    body: "test.test2"
+                    description: ""
+                    scope: "lua"
+                }
+            }
 
 report!
 exit!

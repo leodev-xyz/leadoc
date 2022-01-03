@@ -23,7 +23,23 @@ export fast_iter = =>
     ->
         i += 1
         i <= @n and @[i] or nil
-
+export fast_filter = (cb) =>
+    r = {}
+    j = 1
+    for i = 1, @n
+        continue unless cb @[i]
+        r[j] = @[i]
+        j += 1
+    r.n = j - 1
+    r
+export fast_map = (cb) =>
+    r = {n: @n}
+    r[i] = cb @[i] for i = 1, @n
+    r
+export fast_clone = =>
+    r = {n: @n}
+    r[i] = @[i] for i = 1, @n
+    r
 
 export print_tbl = (dept = 0) =>
     print! if dept == 0
