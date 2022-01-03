@@ -1,6 +1,5 @@
 
 import "leadoc.doc" as leadoc
-import "leadoc.converter.markdown" as convert_markdown
 import "leadoc.validate.lua" as validate_lua
 import "leadoc.find"
 import "leadoc.json"
