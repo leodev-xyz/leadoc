@@ -427,6 +427,7 @@ describe "leadoc", ->
 
         it "typescript definition", ->
             doc = leadoc.doc =>
+                @flag "globals"
                 @namespace "test", ->
                     @function "test", ->
                         @arg "test", "string"

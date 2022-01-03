@@ -7,6 +7,9 @@ import type_to_string, description_to_string from require "leadoc.converter.shar
 
 deep_ts_gen = (wr, doc, node, is_in_class) ->
     return if node.flags.dont_include_in_definition
+    if node.flags.globals
+        wr\writeln "declare global {"
+        wr\incr!
     incr = false
     if node.data
         if node.data.description
@@ -42,6 +45,10 @@ deep_ts_gen = (wr, doc, node, is_in_class) ->
     wr\decr! if incr
     wr\writeln "}" if incr
 
+    if node.flags.globals
+        wr\decr!
+        wr\writeln "}"
+
 
 class Writer
     new: =>
@@ -66,9 +73,5 @@ class Writer
 export generate_typescript = (doc) ->
     wr = Writer!
     wr\writeln "export {}"
-    wr\writeln "declare global {"
-    wr\incr!
     deep_ts_gen wr, doc, doc
-    wr\decr!
-    wr\writeln "}"
     wr\str!
