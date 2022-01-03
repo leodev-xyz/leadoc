@@ -1,5 +1,5 @@
 
-import fast_push, fast_extend, fast_iter, fast_filter, fast_map, print_tbl from require "leadoc.util"
+import fast_push, fast_extend, fast_iter, fast_filter, fast_map from require "leadoc.util"
 
 
 export configs = 
