@@ -14,7 +14,7 @@ deep_ts_gen = (wr, doc, node, is_in_class) ->
             wr\writelines table.concat description_to_string inner: node.data.description
             wr\writeln "*/"
         if node.flags.deprecated
-            wr\writeln "/* @deprecated *"
+            wr\writeln "/* @deprecated */"
         switch node.type
             when "namespace"
                 wr\writeln "namespace #{node.data.name} {"
