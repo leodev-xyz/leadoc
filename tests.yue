@@ -387,7 +387,7 @@ describe "leadoc", ->
                     @flag "dont_include_in_snippet"
                     @function "not_included"
             
-            result = snippets.generate_snippet doc, "lua", snippets.configs.lua
+            result = snippets.generate_snippet doc, snippets.configs.lua
             expect.equal result, {
                 testtest: {
                     prefix: "test.test(test: string, test2: []number): string"

@@ -8,11 +8,13 @@ export configs =
         argument_close: ")"
         no_arguments: "()"
         return_prefix: ": "
+        scope: "lua"
     yue:
         argument_start: " "
         argument_close: ""
         no_arguments: "!"
         return_prefix: " -> "
+        scope: "moonscript,yuescript"
 
 type_to_string = =>
     optional = @optional and "?" or ""
@@ -39,7 +41,7 @@ gather_nodes = =>
 namespacing_nodes = {namespace: true, class: true}
 normalize_string = => @gsub "[^a-zA-Z0-9]", ""
 
-export generate_snippet = (doc, scope, config) ->
+export generate_snippet = (doc, config) ->
     result = {}
     nodes = gather_nodes {tree: doc.tree}
     for thing in fast_iter nodes
@@ -60,7 +62,7 @@ export generate_snippet = (doc, scope, config) ->
                     :prefix
                     :body
                     :description
-                    :scope
+                    scope: config.scope
                 }
             when "variable"
                 prefix = name
@@ -71,7 +73,7 @@ export generate_snippet = (doc, scope, config) ->
                     :prefix
                     body: name
                     :description
-                    :scope
+                    scope: config.scope
                 }
     result
 
