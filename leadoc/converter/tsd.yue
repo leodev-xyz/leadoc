@@ -28,7 +28,7 @@ deep_ts_gen = (wr, doc, node, is_in_class) ->
                 prefix = is_in_class and "public " or "let "
                 suffix = ""
                 suffix = ": #{type_to_string node.data.type.type}" if node.data.type
-                wr\writeln "#{prefix}#{node.data.name}#{suffix}"
+                wr\writeln "#{prefix}#{node.data.name}#{suffix};"
             when "class"
                 wr\writeln "class #{node.data.name} {"
                 args_with_types = table.concat fast_map(node.data.arguments, => if @type then "#{@name}: #{type_to_string @type}" else @name), ", "
