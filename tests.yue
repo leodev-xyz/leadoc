@@ -111,6 +111,12 @@ describe "leadoc", ->
             expect.equal link.href, "https://example.com"
             expect.equal link.inner, {"test"}
         
+        it "link with no inner", ->
+            link = leadoc.fmt.link "https://example.com"
+            expect.equal link.kind, "link"
+            expect.equal link.href, "https://example.com"
+            expect.equal link.inner, "https://example.com"
+        
         it "type", ->
             type = leadoc.fmt.type "test"
             expect.equal type.kind, "type"

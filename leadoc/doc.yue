@@ -168,7 +168,7 @@ export class Documentation
 export fmt = {
     eol: "\n"
     reference: (ref, ...) -> {kind: "reference", :ref, inner: {...}}
-    link: (href, ...) -> {kind: "link", :href, inner: {...}}
+    link: (href, ...) -> {kind: "link", :href, inner: #{...} > 0 and {...} or href}
     type: (type) -> {kind: "type", type: parse_type type}
     header: (level, ...) -> {kind: "header", :level, inner: {...}}
     bold: (...) -> {kind: "bold", inner: {...}}
