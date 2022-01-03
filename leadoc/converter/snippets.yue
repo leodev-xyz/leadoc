@@ -1,6 +1,13 @@
 
 import fast_push, fast_extend, fast_iter, fast_filter, fast_map from require "leadoc.util"
+import type_to_string, description_to_string from require "leadoc.converter.shared"
 
+export gather_nodes = =>
+    return {@, n: 1} unless @tree?
+    result = {@, n: 1}
+    for child in fast_iter @tree
+        fast_extend result, gather_nodes child unless child.flags.dont_include_in_snippet
+    result
 
 export configs = 
     lua: 
@@ -15,28 +22,6 @@ export configs =
         no_arguments: "!"
         return_prefix: " -> "
         scope: "moonscript,yuescript"
-
-type_to_string = =>
-    optional = @optional and "?" or ""
-    prefix = @array and "[]" or ""
-    content = @type
-    content = "[" .. table.concat([type_to_string t for t in *content], ", ") .. "]" if "table" == type content
-    "#{optional}#{prefix}#{content}"
-
-description_to_string = =>
-    return {@, n: 1} if "string" == type @
-    l = @inner and @inner or @
-    return {l, n: 1} if "string" == type l
-    r = {n: 0}
-    fast_extend r, description_to_string i for i in *l
-    r
-
-gather_nodes = =>
-    return {@, n: 1} unless @tree?
-    result = {@, n: 1}
-    for child in fast_iter @tree
-        fast_extend result, gather_nodes child unless child.flags.dont_include_in_snippet
-    result
 
 namespacing_nodes = {namespace: true, class: true}
 normalize_string = => @gsub "[^a-zA-Z0-9]", ""

@@ -1,0 +1,74 @@
+
+-- Typescript Definitions
+
+import fast_push, fast_extend, fast_iter, fast_filter, fast_map, print_tbl from require "leadoc.util"
+import type_to_string, description_to_string from require "leadoc.converter.shared"
+
+
+deep_ts_gen = (wr, doc, node, is_in_class) ->
+    return if node.flags.dont_include_in_definition
+    incr = false
+    if node.data
+        if node.data.description
+            wr\writeln "/*"
+            wr\writelines table.concat description_to_string inner: node.data.description
+            wr\writeln "*/"
+        if node.flags.deprecated
+            wr\writeln "/* @deprecated *"
+        switch node.type
+            when "namespace"
+                wr\writeln "namespace #{node.data.name} {"
+                incr = true
+            when "function"
+                args_with_types = table.concat fast_map(node.data.arguments, => if @type then "#{@name}: #{type_to_string @type}" else @name), ", "
+                prefix = is_in_class and "public " or "function "
+                return_type = node.data.returns and (": " .. type_to_string node.data.returns.type) or ""
+                wr\writeln "#{prefix}#{node.data.name}(#{args_with_types})#{return_type};"
+            when "variable"
+                prefix = is_in_class and "public " or "let "
+                suffix = ""
+                suffix = ": #{type_to_string node.data.type.type}" if node.data.type
+                wr\writeln "#{prefix}#{node.data.name}#{suffix}"
+            when "class"
+                wr\writeln "class #{node.data.name} {"
+                args_with_types = table.concat fast_map(node.data.arguments, => if @type then "#{@name}: #{type_to_string @type}" else @name), ", "
+                wr\wrap -> wr\writeln "constructor(#{args_with_types});"
+                incr = true
+                is_in_class = true
+
+    
+    wr\incr! if incr
+    deep_ts_gen wr, doc, child, is_in_class for child in fast_iter node.tree
+    wr\decr! if incr
+    wr\writeln "}" if incr
+
+
+class Writer
+    new: =>
+        @dept = 0
+        @out = {n: 0}
+    
+    indent: => "\t"\rep @dept
+
+    writeln: (text) => fast_push @out, "#{@indent!}#{text}"
+    writelines: (text) => @writeln line for line in text\gmatch "[^\n]+"
+    
+    incr: => @dept += 1
+    decr: => @dept -= 1
+    wrap: (cb) =>
+        @incr!
+        cb!
+        @decr!
+
+    str: => table.concat @out, "\n"
+
+
+export generate_typescript = (doc) ->
+    wr = Writer!
+    wr\writeln "export {}"
+    wr\writeln "declare global {"
+    wr\incr!
+    deep_ts_gen wr, doc, doc
+    wr\decr!
+    wr\writeln "}"
+    wr\str!

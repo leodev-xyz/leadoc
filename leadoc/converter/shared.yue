@@ -1,0 +1,18 @@
+
+import fast_extend from require "leadoc.util"
+
+
+export type_to_string = =>
+    optional = @optional and "?" or ""
+    prefix = @array and "[]" or ""
+    content = @type
+    content = "[" .. table.concat([type_to_string t for t in *content], ", ") .. "]" if "table" == type content
+    "#{optional}#{prefix}#{content}"
+
+export description_to_string = =>
+    return {@, n: 1} if "string" == type @
+    l = @inner and @inner or @
+    return {l, n: 1} if "string" == type l
+    r = {n: 0}
+    fast_extend r, description_to_string i for i in *l
+    r

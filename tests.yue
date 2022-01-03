@@ -1,6 +1,7 @@
 
 import "leadoc.doc" as leadoc
 import "leadoc.converter.snippets"
+import "leadoc.converter.tsd"
 import "leadoc.validate.lua" as validate_lua
 import "leadoc.find"
 import "leadoc.json"
@@ -409,6 +410,35 @@ describe "leadoc", ->
                     scope: "lua"
                 }
             }
+
+        it "typescript definition", ->
+            doc = leadoc.doc =>
+                @namespace "test", ->
+                    @function "test", ->
+                        @arg "test", "string"
+                        @arg "test2", "[]number"
+                        @arg "test3", "[number, number]"
+                        @returns "string"
+                    @variable "test2", ->
+                        @type "string"
+                @namespace "test2", ->
+                    @flag "dont_include_in_definition"
+                    @function "not_included"
+
+            result = tsd.generate_typescript doc
+            lines = {
+                "export {}"
+                "declare global {"
+                "\tnamespace test {"
+                "\t\tfunction test(test: string, test2: []number, test3: [number, number]): string;"
+                "\t\tlet test2: string"
+                "\t}"
+                "}"
+            }
+            i = 1
+            for line in result\gmatch "[^\n]+"
+                expect.equal line, lines[i]
+                i += 1
 
 report!
 exit!
