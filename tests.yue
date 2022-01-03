@@ -394,6 +394,8 @@ describe "leadoc", ->
                 @namespace "test2", ->
                     @flag "dont_include_in_snippet"
                     @function "not_included"
+                @class "testclass", ->
+                    @function "test"
             
             result = snippets.generate_snippet doc, snippets.configs.lua
             expect.equal result, {
@@ -406,6 +408,18 @@ describe "leadoc", ->
                 testtest2: {
                     prefix: "test.test2: string"
                     body: "test.test2"
+                    description: ""
+                    scope: "lua"
+                },
+                testclass: {
+                    prefix: "testclass()"
+                    body: "testclass()"
+                    description: ""
+                    scope: "lua"
+                },
+                testclasstest: {
+                    prefix: "testclass.test()"
+                    body: "testclass.test()"
                     description: ""
                     scope: "lua"
                 }

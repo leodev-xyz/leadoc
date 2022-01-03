@@ -16,12 +16,14 @@ export configs =
         no_arguments: "()"
         return_prefix: ": "
         scope: "lua"
+        class_init: ""
     yue:
         argument_start: " "
         argument_close: ""
         no_arguments: "!"
         return_prefix: " -> "
         scope: "moonscript,yuescript"
+        class_init: ""
 
 namespacing_nodes = {namespace: true, class: true}
 normalize_string = => @gsub "[^a-zA-Z0-9]", ""
@@ -30,17 +32,19 @@ export generate_snippet = (doc, config) ->
     result = {}
     nodes = gather_nodes {tree: doc.tree}
     for thing in fast_iter nodes
-        continue unless thing.type == "function" or thing.type == "variable"
+        continue unless thing.type == "function" or thing.type == "variable" or thing.type == "class"
         name = fast_map fast_filter(thing.stack, => namespacing_nodes[doc.ids[@].type]), => doc.ids[@].data.name
         fast_push name, thing.data.name
         name = table.concat name, "."
         switch thing.type
-            when "function"
+            when "function", "class"
                 args = table.concat fast_map(thing.data.arguments, => @name), ", "
                 args_with_types = table.concat fast_map(thing.data.arguments, => if @type then "#{@name}: #{type_to_string @type}" else @name), ", "
                 prefix = "#{name}#{config.argument_start}#{args_with_types}#{config.argument_close}"
                 prefix = "#{prefix}#{config.return_prefix}#{type_to_string thing.data.returns.type}" if thing.data.returns
+                prefix = "#{config.class_init}#{prefix}" if thing.type == "class"
                 body = "#{name}#{config.argument_start}#{args}#{config.argument_close}"
+                body = "#{config.class_init}#{body}" if thing.type == "class"
                 description = ""
                 description = table.concat description_to_string inner: thing.data.description if thing.data.description
                 result[normalize_string name] = {
