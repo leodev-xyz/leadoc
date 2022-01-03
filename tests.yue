@@ -446,7 +446,7 @@ describe "leadoc", ->
                 "declare global {"
                 "\tnamespace test {"
                 "\t\tfunction test(test: string, test2: []number, test3: [number, number]): string;"
-                "\t\tlet test2: string"
+                "\t\tlet test2: string;"
                 "\t}"
                 "}"
             }
