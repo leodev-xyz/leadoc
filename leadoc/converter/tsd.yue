@@ -22,7 +22,7 @@ deep_ts_gen = (wr, doc, node, is_in_class) ->
             wr\writeln "/* @deprecated */"
         if node.flags.__tsd_typedef
             wr\writeln "type #{node.data.name} = #{node.flags.__tsd_typedef}"
-            continue
+            return
         switch node.type
             when "namespace"
                 wr\writeln "namespace #{node.data.name} {"
