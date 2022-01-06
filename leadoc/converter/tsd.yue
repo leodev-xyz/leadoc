@@ -13,9 +13,11 @@ deep_ts_gen = (wr, doc, node, is_in_class) ->
     incr = false
     if node.data
         if node.data.description
-            wr\writeln "/*"
-            wr\writelines table.concat description_to_string inner: node.data.description
-            wr\writeln "*/"
+            content = table.concat description_to_string inner: node.data.description
+            if #content > 0
+                wr\writeln "/*"
+                wr\writelines content
+                wr\writeln "*/"
         if node.flags.deprecated
             wr\writeln "/* @deprecated */"
         switch node.type
