@@ -73,5 +73,7 @@ class Writer
 export generate_typescript = (doc) ->
     wr = Writer!
     wr\writeln "export {}"
+    wr\writeln "type integer = number;"
+    wr\writeln "type float = number;"
     deep_ts_gen wr, doc, doc
     wr\str!
