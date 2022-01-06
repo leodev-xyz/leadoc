@@ -451,6 +451,7 @@ describe "leadoc", ->
                 "\tnamespace test {"
                 "\t\tfunction test(test: string, test2: Array<number>, test3: [number, number], test4: integer | undefined): string;"
                 "\t\tlet test2: string;"
+                "\t\tfunction test3(): void;"
                 "\t}"
                 "}"
             }

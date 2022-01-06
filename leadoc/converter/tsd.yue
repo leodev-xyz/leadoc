@@ -27,7 +27,7 @@ deep_ts_gen = (wr, doc, node, is_in_class) ->
             when "function"
                 args_with_types = table.concat fast_map(node.data.arguments, => if @type then "#{@name}: #{type_to_string @type, true}" else @name), ", "
                 prefix = is_in_class and "public " or "function "
-                return_type = node.data.returns and (": " .. type_to_string node.data.returns.type, true) or ""
+                return_type = node.data.returns and (": " .. type_to_string node.data.returns.type, true) or ": void"
                 wr\writeln "#{prefix}#{node.data.name}(#{args_with_types})#{return_type};"
             when "variable"
                 prefix = is_in_class and "public " or "let "
