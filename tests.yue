@@ -433,9 +433,11 @@ describe "leadoc", ->
                         @arg "test", "string"
                         @arg "test2", "[]number"
                         @arg "test3", "[number, number]"
+                        @arg "test4", "?integer"
                         @returns "string"
                     @variable "test2", ->
                         @type "string"
+                    @function "test3"
                 @namespace "test2", ->
                     @flag "dont_include_in_definition"
                     @function "not_included"
@@ -443,9 +445,11 @@ describe "leadoc", ->
             result = tsd.generate_typescript doc
             lines = {
                 "export {}"
+                "type integer = number;"
+                "type float = number;"
                 "declare global {"
                 "\tnamespace test {"
-                "\t\tfunction test(test: string, test2: []number, test3: [number, number]): string;"
+                "\t\tfunction test(test: string, test2: Array<number>, test3: [number, number], test4: integer | undefined): string;"
                 "\t\tlet test2: string;"
                 "\t}"
                 "}"
