@@ -152,7 +152,7 @@ export class Documentation
             fn @, data, tos
             fast_del @stack
         data
-    
+
     clone: =>
         new = @@!
         new.description = @description
@@ -163,7 +163,7 @@ export class Documentation
         new.tree = deep_copy @tree
         flattened = flatten_tree new.tree
         new.ids[thing.id] = thing for thing in fast_iter flattened
-        
+
 
 export fmt = {
     eol: "\n"

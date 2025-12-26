@@ -31,7 +31,7 @@ compare = (expected, reality) ->
     for key in *wrong
         result[result_n] = "TYPE MISMATCH: #{key} (expected: #{expected[key]}, got: #{reality[key]})"
         result_n += 1
-    
+
     undocumented = [k for k, v in pairs reality when not expected[k]?]
     table.sort undocumented
     for key in *undocumented
@@ -66,7 +66,7 @@ gather_expected = (expected, path) =>
             expected["#{path}#{@data.name}"] = conversions[@data.type.type.type]
         else
             expected["#{path}#{@data.name}"] = "any"
-    
+
     if @tree.n > 0
         child_path = if attach_name[@type] then "#{path}#{@data.name}." else path
         for child in fast_iter @tree
@@ -76,13 +76,13 @@ gather_expected = (expected, path) =>
 =>
     expected = {}
     gather_expected {tree: @}, expected, ""
-    
+
     encoded = {n: 0}
     for key, value in pairs expected
         fast_push encoded, "%q: %q"\format key, value
     encoded = "{#{table.concat encoded, ", "}}"
 
-    
+
     script = table.concat {
         snippets.gather_reality
         snippets.compare
@@ -91,4 +91,4 @@ gather_expected = (expected, path) =>
 
     to_lua script, reserve_line_number: false
 
-    
+

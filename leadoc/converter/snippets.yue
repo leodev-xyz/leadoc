@@ -9,8 +9,8 @@ export gather_nodes = =>
         fast_extend result, gather_nodes child unless child.flags.dont_include_in_snippet
     result
 
-export configs = 
-    lua: 
+export configs =
+    lua:
         argument_start: "("
         argument_close: ")"
         no_arguments: "()"

@@ -34,7 +34,7 @@ describe "leadoc", ->
                 doc = leadoc.doc => @namespace "test"
                 expect.equal doc.tree[1].type, "namespace"
                 expect.equal doc.tree[1].data.name, "test"
-            
+
             it "namespace with description", ->
                 doc = leadoc.doc => @namespace "test", -> @description "test"
                 expect.equal doc.tree[1].data.description, "test"
@@ -67,13 +67,13 @@ describe "leadoc", ->
                 doc = leadoc.doc => @class "test"
                 expect.equal doc.tree[1].type, "class"
                 expect.equal doc.tree[1].data.name, "test"
-        
+
         describe "variable", ->
-            it "variable", -> 
+            it "variable", ->
                 doc = leadoc.doc => @variable "test"
                 expect.equal doc.tree[1].type, "variable"
                 expect.equal doc.tree[1].data.name, "test"
-            
+
             it "variable with type", ->
                 doc = leadoc.doc => @variable "test", -> @type "test"
                 expect.equal doc.tree[1].type, "variable"
@@ -84,14 +84,14 @@ describe "leadoc", ->
             it "global flag", ->
                 doc = leadoc.doc => @flag "test"
                 expect.equal doc.flags, {test: true}
-            
+
             it "namespace flag", ->
                 doc = leadoc.doc => @namespace "test", -> @flag "test"
                 expect.equal doc.tree[1].flags, {test: true}
 
         it "global description fail", ->
             expect.fail (-> leadoc.doc => @description "test"), "description must be a descenedet of something"
-                
+
 
     describe "fmt", ->
         it "reference", ->
@@ -111,18 +111,18 @@ describe "leadoc", ->
             expect.equal link.kind, "link"
             expect.equal link.href, "https://example.com"
             expect.equal link.inner, {"test"}
-        
+
         it "link with no inner", ->
             link = leadoc.fmt.link "https://example.com"
             expect.equal link.kind, "link"
             expect.equal link.href, "https://example.com"
             expect.equal link.inner, "https://example.com"
-        
+
         it "type", ->
             type = leadoc.fmt.type "test"
             expect.equal type.kind, "type"
             expect.equal type.type, {type: "test", array: false, optional: false}
-        
+
         it "header", ->
             header = leadoc.fmt.header 2, "test"
             expect.equal header.kind, "header"
@@ -139,22 +139,22 @@ describe "leadoc", ->
         it "simple", ->
             type = leadoc.parse_type "test"
             expect.equal type, {type: "test", array: false, optional: false}
-        
+
         it "optional", ->
             type = leadoc.parse_type "?test"
             expect.equal type, {type: "test", array: false, optional: true}
 
             type = leadoc.parse_type "test?"
             expect.equal type, {type: "test?", array: false, optional: false}
-        
+
         it "optional with spaces", ->
             type = leadoc.parse_type "     ?   test                   "
             expect.equal type, {type: "test", array: false, optional: true}
-        
+
         it "array of one type", ->
             type = leadoc.parse_type "[]test"
             expect.equal type, {type: "test", array: true, optional: false}
-        
+
         it "one type array and optional", ->
             type = leadoc.parse_type "?[]test"
             expect.equal type, {type: "test", array: true, optional: true}
@@ -165,7 +165,7 @@ describe "leadoc", ->
         it "array with multiple types", ->
             type = leadoc.parse_type "[test1, test2]"
             expect.equal type, {type: {{type: "test1", array: false, optional: false}, {type: "test2", array: false, optional: false}}, array: false, optional: false}
-        
+
         it "array with multiple advanced types", ->
             type = leadoc.parse_type "[[]test1, ?test2]"
             expect.equal type, {type: {{type: "test1", array: true, optional: false}, {type: "test2", array: false, optional: true}}, array: false, optional: false}
@@ -192,7 +192,7 @@ describe "leadoc", ->
                 @namespace "test2", ->
                     @flag "dont_validate"
                     @function "not_checked"
-            
+
             local result
             env = {
                 index#: _G
@@ -218,7 +218,7 @@ describe "leadoc", ->
                 setfenv code_fn, env
             else -- Lua 5.2+
                 code_fn = load code, "<sandboxed validate.lua>", "bt", env
-            
+
             code_fn!
             output = [x for x in result\gmatch "[^\n]+"]
             expected = {
@@ -234,7 +234,7 @@ describe "leadoc", ->
             it "json.null", ->
                 encoded = json.stringify test: json.null
                 expect.equal encoded, '{"test":null}'
-            
+
             it "fast arrays", ->
                 array = {n: 0}
                 fast_push array, "test 1"
@@ -243,14 +243,14 @@ describe "leadoc", ->
 
                 encoded = json.stringify array
                 expect.equal encoded, '["test 1", "test 2", "test 3"]'
-            
+
             it "empty array", ->
                 encoded = json.stringify n: 0
                 expect.equal encoded, "[]"
 
                 encoded = json.stringify {}
                 expect.equal encoded, "{}"
-            
+
             it "mixed array and object", ->
                 object = {
                     "test 1"
@@ -273,7 +273,7 @@ describe "leadoc", ->
                     pair = pair\sub 1 + #pair\match "%s*"  -- remove whitespace
                     expect.truthy expected[pair]
                     expected[pair] = nil
-                
+
                 expect.equal expected, {}
 
     describe "fast arrays", ->
@@ -283,7 +283,7 @@ describe "leadoc", ->
             fast_push array, "test 2"
             fast_push array, "test 3"
             expect.equal array, {"test 1", "test 2", "test 3", n: 3}
-        
+
         it "peek", ->
             array = {n: 0}
             expect.falsy fast_peek array
@@ -321,7 +321,7 @@ describe "leadoc", ->
             fast_push array, "test 3"
             expect.falsy fast_del array
             expect.equal array, {"test 1", "test 2", n: 2}
-        
+
         it "iter", ->
             array = {"test 1", "test 2", "test 3", n: 3}
             i = 1
@@ -329,7 +329,7 @@ describe "leadoc", ->
                 expect.equal array[i], x
                 i += 1
             expect.equal i, 4
-        
+
         it "iter with limit", ->
             array = {"test 1", "test 2", "test 3", n: 2}
             i = 1
@@ -337,7 +337,7 @@ describe "leadoc", ->
                 expect.equal array[i], x
                 i += 1
             expect.equal i, 3
-        
+
         it "extend", ->
             array = {"test 1", "test 2", "test 3", n: 3}
             array2 = {"test 4", "test 5", "test 6", n: 3}
@@ -355,13 +355,13 @@ describe "leadoc", ->
                             @flag "test"
                         test2 = @function "test2", ->
                             @flag "test2"
-                
+
                 results = find.find_flag doc, "test"
                 expect.equal results, {test.id, n: 1}
 
                 results = find.find_flag doc, "test2"
                 expect.equal results, {test2.id, n: 1}
-            
+
             it "specific value", ->
                 local test, test2
                 doc = leadoc.doc =>
@@ -370,7 +370,7 @@ describe "leadoc", ->
                             @flag "test", "veryspecific"
                         test2 = @function "test2", ->
                             @flag "test"
-                
+
                 results = find.find_flag doc, "test", "veryspecific"
                 expect.equal results, {test.id, n: 1}
 
@@ -396,7 +396,7 @@ describe "leadoc", ->
                     @function "not_included"
                 @class "testclass", ->
                     @function "test"
-            
+
             result = snippets.generate_snippet doc, snippets.configs.lua
             expect.equal result, {
                 testtest: {
@@ -461,4 +461,4 @@ describe "leadoc", ->
                 i += 1
 
 report!
-exit!
+exit

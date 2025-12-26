@@ -75,20 +75,20 @@ export expect_type = (index, value, ...) ->
     type_to_check = type value
     for allowed_type in fast_iter allowed_types
         return value if allowed_type == type_to_check
-    
+
     -- Not allowed type
 
     -- Try to get functon name
     ok, info = pcall debug.getinfo, 3, "nS"
 
     name = ok and info.name and info.name != "" and info.what != "C" and info.name
-    
+
     local expected
     if allowed_types.n == 1
         expected = allowed_types[1]
     else
         expected = (table.concat [x for x in *allowed_types[,allowed_types.n - 1]], ", ") .. fast_peek allowed_types
-    
+
     if name
         error "bad argument #%d to %q (expected %s, got %s)"\format index, name, expected, type_to_check
     else
