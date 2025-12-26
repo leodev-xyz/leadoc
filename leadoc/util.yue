@@ -45,10 +45,10 @@ export print_tbl = (dept = 0) =>
     print! if dept == 0
     for k, v in pairs @
         if "table" == type v
-            print "#{"  "\rep dept}#{k}:"
+            print "#{"  "::rep dept}#{k}:"
             print_tbl v, dept + 1
         else
-            print "#{"  "\rep dept}#{k}: #{"%q"\format v}"
+            print "#{"  "::rep dept}#{k}: #{"%q"::format v}"
 
 
 export remove_stack = =>
@@ -90,7 +90,7 @@ export expect_type = (index, value, ...) ->
         expected = (table.concat [x for x in *allowed_types[,allowed_types.n - 1]], ", ") .. fast_peek allowed_types
 
     if name
-        error "bad argument #%d to %q (expected %s, got %s)"\format index, name, expected, type_to_check
+        error "bad argument #%d to %q (expected %s, got %s)"::format index, name, expected, type_to_check
     else
-        error "bad argument #%d (expected %s, got %s)"\format index, expected, type_to_check
+        error "bad argument #%d (expected %s, got %s)"::format index, expected, type_to_check
 

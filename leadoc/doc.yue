@@ -55,7 +55,7 @@ possible_parents = {
 export parse_type = =>
     return unless @?
     expect_type 1, @, "string"
-    @ = @\gsub " +", ""
+    @ = @::gsub " +", ""
     is_optional = "?" == @sub 1, 1
     @ = @sub 2 if is_optional
 

@@ -220,7 +220,7 @@ describe "leadoc", ->
                 code_fn = load code, "<sandboxed validate.lua>", "bt", env
 
             code_fn!
-            output = [x for x in result\gmatch "[^\n]+"]
+            output = [x for x in result::gmatch "[^\n]+"]
             expected = {
                 "TYPE MISMATCH: test.testf_2 (expected: function, got: string)"
                 "TYPE MISMATCH: test.testf_3 (expected: function, got: nil)"
@@ -269,8 +269,8 @@ describe "leadoc", ->
                     '"n":3'
                     '"test":"test"'
                 }}
-                for pair in (encoded\sub 2, -2)\gmatch "[^,]+"
-                    pair = pair\sub 1 + #pair\match "%s*"  -- remove whitespace
+                for pair in (encoded::sub 2, -2)::gmatch "[^,]+"
+                    pair = pair::sub 1 + #pair::match "%s*"  -- remove whitespace
                     expect.truthy expected[pair]
                     expected[pair] = nil
 
@@ -456,7 +456,7 @@ describe "leadoc", ->
                 "}"
             }
             i = 1
-            for line in result\gmatch "[^\n]+"
+            for line in result::gmatch "[^\n]+"
                 expect.equal line, lines[i]
                 i += 1
 

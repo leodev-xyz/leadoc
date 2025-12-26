@@ -79,14 +79,14 @@ gather_expected = (expected, path) =>
 
     encoded = {n: 0}
     for key, value in pairs expected
-        fast_push encoded, "%q: %q"\format key, value
+        fast_push encoded, "%q: %q"::format key, value
     encoded = "{#{table.concat encoded, ", "}}"
 
 
     script = table.concat {
         snippets.gather_reality
         snippets.compare
-        snippets.final\format encoded
+        snippets.final::format encoded
     }, "\n\n"
 
     to_lua script, reserve_line_number: false
