@@ -2,7 +2,7 @@
 -- Typescript Definitions
 
 import fast_push, fast_extend, fast_iter, fast_filter, fast_map, print_tbl from require "leadoc.util"
-import type_to_string, description_to_string from require "leadoc.converter.shared"
+import type_to_string, description_to_string from require "leadoc.gen.shared"
 
 
 deep_ts_gen = (wr, doc, node, is_in_class) ->
@@ -63,7 +63,7 @@ class Writer
     indent: => "\t"::rep @dept
 
     writeln: (text) => fast_push @out, "#{@indent!}#{text}"
-    writelines: (text) => @writeln line for line in text::gmatch "[^\\n]+"
+    writelines: (text) => @writeln line for line in text::gmatch "[^\n]+"
 
     incr: => @dept += 1
     decr: => @dept -= 1

@@ -1,0 +1,21 @@
+import expect_type from "leadoc.util"
+
+export parse_type = =>
+    return unless @?
+    expect_type 1, @, "string"
+    @ = @::gsub " +", ""
+    is_optional = "?" == @sub 1, 1
+    @ = @sub 2 if is_optional
+
+    is_arrtype = "[]" == @sub 1, 2
+    @ = @sub 3 if is_arrtype
+
+    if ("[" == @sub 1, 1) and ("]" == @sub #@)
+        @ = @sub 2, #@ - 1
+        @ = [parse_type x for x in @gmatch "[^,]+"]
+
+    {
+        type: @
+        optional: is_optional
+        array: is_arrtype
+    }

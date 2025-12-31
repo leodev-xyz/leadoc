@@ -1,9 +1,10 @@
--- Not 100% sure why the current directory is not in the package path by default
 package.path = "?.lua;" .. package.path
 
 import "leadoc.doc" as leadoc
-import "leadoc.converter.snippets"
-import "leadoc.converter.tsd"
+import "leadoc.fmt"
+import parse_type from "leadoc.type"
+import "leadoc.gen.snippets"
+import "leadoc.gen.tsd"
 import "leadoc.validate.lua" as validate_lua
 import "leadoc.validate.javascript" as validate_javascript
 import "leadoc.find"
@@ -102,83 +103,83 @@ describe "leadoc", ->
 
     describe "fmt", ->
         it "reference", ->
-            reference = leadoc.fmt.reference "test1", "test2"
+            reference = fmt.reference "test1", "test2"
             expect.equal reference.kind, "reference"
             expect.equal reference.ref, "test1"
             expect.equal reference.inner, {"test2"}
 
         for kind in *{"bold", "italic", "code", "info", "warn", "danger"}
             it kind, ->
-                obj = leadoc.fmt[kind] "test1", "test2"
+                obj = fmt[kind] "test1", "test2"
                 expect.equal obj.kind, kind
                 expect.equal obj.inner, {"test1", "test2"}
 
         it "link", ->
-            link = leadoc.fmt.link "https://example.com", "test"
+            link = fmt.link "https://example.com", "test"
             expect.equal link.kind, "link"
             expect.equal link.href, "https://example.com"
             expect.equal link.inner, {"test"}
 
         it "link with no inner", ->
-            link = leadoc.fmt.link "https://example.com"
+            link = fmt.link "https://example.com"
             expect.equal link.kind, "link"
             expect.equal link.href, "https://example.com"
             expect.equal link.inner, "https://example.com"
 
         it "type", ->
-            type = leadoc.fmt.type "test"
+            type = fmt.type "test"
             expect.equal type.kind, "type"
             expect.equal type.type, {type: "test", array: false, optional: false}
 
         it "header", ->
-            header = leadoc.fmt.header 2, "test"
+            header = fmt.header 2, "test"
             expect.equal header.kind, "header"
             expect.equal header.level, 2
             expect.equal header.inner, {"test"}
 
         it "codeblock", ->
-            codeblock = leadoc.fmt.codeblock "lua", "test"
+            codeblock = fmt.codeblock "lua", "test"
             expect.equal codeblock.kind, "codeblock"
             expect.equal codeblock.language, "lua"
             expect.equal codeblock.inner, {"test"}
 
     describe "type parser", ->
         it "simple", ->
-            type = leadoc.parse_type "test"
+            type = parse_type "test"
             expect.equal type, {type: "test", array: false, optional: false}
 
         it "optional", ->
-            type = leadoc.parse_type "?test"
+            type = parse_type "?test"
             expect.equal type, {type: "test", array: false, optional: true}
 
-            type = leadoc.parse_type "test?"
+            type = parse_type "test?"
             expect.equal type, {type: "test?", array: false, optional: false}
 
         it "optional with spaces", ->
-            type = leadoc.parse_type "     ?   test                   "
+            type = parse_type "     ?   test                   "
             expect.equal type, {type: "test", array: false, optional: true}
 
         it "array of one type", ->
-            type = leadoc.parse_type "[]test"
+            type = parse_type "[]test"
             expect.equal type, {type: "test", array: true, optional: false}
 
         it "one type array and optional", ->
-            type = leadoc.parse_type "?[]test"
+            type = parse_type "?[]test"
             expect.equal type, {type: "test", array: true, optional: true}
 
-            type = leadoc.parse_type "[]?test"
+            type = parse_type "[]?test"
             expect.equal type, {type: "?test", array: true, optional: false}
 
         it "array with multiple types", ->
-            type = leadoc.parse_type "[test1, test2]"
+            type = parse_type "[test1, test2]"
             expect.equal type, {type: {{type: "test1", array: false, optional: false}, {type: "test2", array: false, optional: false}}, array: false, optional: false}
 
         it "array with multiple advanced types", ->
-            type = leadoc.parse_type "[[]test1, ?test2]"
+            type = parse_type "[[]test1, ?test2]"
             expect.equal type, {type: {{type: "test1", array: true, optional: false}, {type: "test2", array: false, optional: true}}, array: false, optional: false}
 
         it "array of array with multiple types", ->
-            type = leadoc.parse_type "[][test1, test2]"
+            type = parse_type "[][test1, test2]"
             expect.equal type, {type: {{type: "test1", array: false, optional: false}, {type: "test2", array: false, optional: false}}, array: true, optional: false}
 
     describe "validate", ->

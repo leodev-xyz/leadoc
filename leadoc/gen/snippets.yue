@@ -1,6 +1,6 @@
 
 import fast_push, fast_extend, fast_iter, fast_filter, fast_map from require "leadoc.util"
-import type_to_string, description_to_string from require "leadoc.converter.shared"
+import type_to_string, description_to_string from require "leadoc.gen.shared"
 
 export gather_nodes = =>
     return {@, n: 1} unless @tree?

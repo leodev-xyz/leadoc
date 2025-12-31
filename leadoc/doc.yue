@@ -1,5 +1,6 @@
 
 import find_flag from "leadoc.find"
+import parse_type from "leadoc.type"
 import fast_push, fast_peek, fast_del, fast_iter, fast_clone, deep_copy, flatten_tree, expect_type from "leadoc.util"
 
 
@@ -51,26 +52,6 @@ possible_parents = {
         section: true
     }
 }
-
-export parse_type = =>
-    return unless @?
-    expect_type 1, @, "string"
-    @ = @::gsub " +", ""
-    is_optional = "?" == @sub 1, 1
-    @ = @sub 2 if is_optional
-
-    is_arrtype = "[]" == @sub 1, 2
-    @ = @sub 3 if is_arrtype
-
-    if ("[" == @sub 1, 1) and ("]" == @sub #@)
-        @ = @sub 2, #@ - 1
-        @ = [parse_type x for x in @gmatch "[^,]+"]
-
-    {
-        type: @
-        optional: is_optional
-        array: is_arrtype
-    }
 
 
 export class Documentation
@@ -163,22 +144,6 @@ export class Documentation
         new.tree = deep_copy @tree
         flattened = flatten_tree new.tree
         new.ids[thing.id] = thing for thing in fast_iter flattened
-
-
-export fmt = {
-    eol: "\n"
-    reference: (ref, ...) -> {kind: "reference", :ref, inner: {...}}
-    link: (href, ...) -> {kind: "link", :href, inner: #{...} > 0 and {...} or href}
-    type: (type) -> {kind: "type", type: parse_type type}
-    header: (level, ...) -> {kind: "header", :level, inner: {...}}
-    bold: (...) -> {kind: "bold", inner: {...}}
-    italic: (...) -> {kind: "italic", inner: {...}}
-    code: (...) -> {kind: "code", inner: {...}}
-    codeblock: (language, ...) -> {kind: "codeblock", :language, inner: {...}}
-    info: (...) -> {kind: "info", inner: {...}}
-    warn: (...) -> {kind: "warn", inner: {...}}
-    danger: (...) -> {kind: "danger", inner: {...}}
-}
 
 
 export doc = (...) =>
