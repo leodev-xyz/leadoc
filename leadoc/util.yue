@@ -1,5 +1,8 @@
 
 -- Fast Table
+export ensure_fast = =>
+	@n = #@ unless @n?
+	@
 export fast_push = (tbl, item) ->
 	tbl[tbl.n + 1] = item
 	tbl.n += 1
@@ -40,6 +43,9 @@ export fast_clone = =>
 	r = {n: @n}
 	r[i] = @[i] for i = 1, @n
 	r
+export fast_find = (cb) =>
+	for i = 1, @n
+		return @[i] if cb @[i]
 
 export print_tbl = (dept = 0) =>
 	print! if dept == 0

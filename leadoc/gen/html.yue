@@ -1,0 +1,195 @@
+import ensure_fast, fast_push, fast_pop, fast_extend, fast_iter, fast_filter, fast_map, fast_clone from "leadoc.util"
+import find_reference, find_flag from "leadoc.find"
+import "leadoc.fmt"
+import type_to_string from "leadoc.gen.shared"
+
+escape_html = (str) ->
+	v = tostring(str)
+		::gsub "&", "&amp;"
+		::gsub "<", "&lt;"
+		::gsub ">", "&gt;"
+		::gsub '"', "&quot;"
+		::gsub "'", "&#39;"
+		::gsub "\n", "<br>"
+	v
+
+h = (body, attr={}) =>
+	return table.concat([(if "table" == type x then h x else x) for x in *@ when x], "") if "table" == type @
+	-- attr = {} if "table" != type attr
+
+	switch type body
+		when "number", "boolean"
+			body = tostring body
+		when "table"
+			body = h body
+
+	"<#{@}#{if (next attr)? then " " .. table.concat ["#{escape_html k}=\"#{escape_html v}\"" for k, v in pairs attr], " " else ""}>#{body}</#{@}>"
+
+type_to_html = (doc) =>
+	content = @type
+	if "table" == type content
+		content = h
+			* h "i", "["
+			* table.concat(fast_map(ensure_fast(content), => type_to_html @, doc), ", ")
+			* h "i", "]"
+	else
+		types = find_flag doc, "types"
+		found = false
+		for type_id in fast_iter types
+			type_node = doc.ids[type_id]
+			ref = find_reference type_node, {content, n: 1}
+			if ref
+				content = h "a", escape_html(content), {href: "#" .. ref.id}
+				found = true
+
+		content = h "u", escape_html content unless found
+
+	if @array
+		content = h
+			* h "i", "Array&lt;"
+			* content
+			* h "i", "&gt;"
+
+	if @optional
+		content = h
+			* content
+			* h "i", " (optional)"
+
+	content
+
+description_to_html = (doc) =>
+	return escape_html @ if "string" == type @
+	return table.concat(fast_map(ensure_fast(@), => description_to_html @, doc), "") if not @kind? and "table" == type @
+
+	switch @kind
+		when "reference"
+			ref = find_reference doc, @ref
+			inner = description_to_html(@inner, doc)
+			return h "a", inner != "" and inner or table.concat(@ref, "."), {href: "#" .. (ref and ref.id or "")}
+		when "link"
+			return h "a", description_to_html(@inner or @href, doc), {href: @href}
+		when "type"
+			return type_to_html @type, doc
+		when "bold"
+			return h "strong", description_to_html @inner, doc
+		when "italic"
+			return h "i", description_to_html @inner, doc
+		when "code"
+			return h "code", description_to_html @inner, doc
+		when "codeblock"
+			return h "pre", h "code", description_to_html @inner, doc
+		when "info"
+			return h "aside", h
+				* h "header", h "strong", "Note"
+				* description_to_html @inner, doc
+		when "warn"
+			return h "aside", h
+				* h "header", h "strong", "Warning"
+				* description_to_html @inner, doc
+		when "danger"
+			return h "aside", h
+				* h "header", h "strong", "Danger"
+				* description_to_html @inner, doc
+
+deep_html_gen = (doc, node, name_stack) ->
+	return "" if node.flags.dont_include_in_html
+
+	c = {n: 0}
+	fast_push c, h "h1", "Global" if node.flags.global
+
+	local inherit_name
+
+	switch node.type
+		when "section"
+			fast_push c, h "h1", node.data.name, {
+				id: node.id
+			} if node.data?.name?
+
+		when "namespace"
+			inherit_name = node.data.name
+			fast_push c, h "h2", {
+				table.concat name_stack, "."
+				name_stack.n > 0 and "."
+				h "b", node.data.name
+			}, {id: node.id}
+
+		when "function"
+			fast_push c, h "h3", {
+				table.concat name_stack, "."
+				name_stack.n > 0 and "."
+				h "b", node.data.name
+				"("
+				table.concat fast_map(node.data.arguments, => @name), ", "
+				")"
+			}, {id: node.id}
+
+		when "variable"
+			fast_push c, h "h3", {
+				table.concat name_stack, "."
+				name_stack.n > 0 and "."
+				h "b", node.data.name
+			}, {id: node.id}
+
+		when "class"
+			inherit_name = node.data.name
+			fast_push c, h "h2", {
+				table.concat name_stack, "."
+				name_stack.n > 0 and "."
+				h "b", node.data.name
+				"("
+				table.concat fast_map(node.data.arguments, => @name), ", "
+				")"
+			}, {id: node.id}
+
+	if node.flags.deprecated
+		fast_push c, h "mark", "Deprecated"
+
+	switch node.type
+		when "function", "class"
+			for arg in fast_iter node.data.arguments
+				fast_push c, h "div",
+					* h "b", arg.name
+					* if arg.type then ": #{type_to_html arg.type, doc}" else ""
+					* if arg.default? then " = #{escape_html arg.default}" else ""
+				if arg.description?
+					fast_push c, h "div", description_to_html arg.description, doc
+
+			if node.data.returns
+				fast_push c, h "div",
+					* h "b", "Returns: "
+					* if node.data.returns.type then type_to_html node.data.returns.type, doc else ""
+				if node.data.returns.description?
+					fast_push c, h "div", description_to_html node.data.returns.description, doc
+
+			c = {
+				h "hgroup", c
+				n: 1
+			}
+
+		when "variable"
+			if node.data.type
+				fast_push c, h "div",
+					* h "b", "Type: "
+					* type_to_html node.data.type.type, doc
+
+				c = {
+					h "hgroup", c
+					n: 1
+				}
+
+	if node.data?.text
+		fast_push c, h "div", description_to_html node.data.text, doc
+
+	if node.data?.description?
+		fast_push c, h "div", description_to_html node.data.description, doc
+
+	cloned_name_stack = fast_clone name_stack
+	fast_push cloned_name_stack, inherit_name if inherit_name
+
+	fast_push c, deep_html_gen doc, child, cloned_name_stack for child in fast_iter node.tree
+
+	h "section", c
+
+
+export generate_html = (doc, config) ->
+	deep_html_gen doc, doc, {n: 0}

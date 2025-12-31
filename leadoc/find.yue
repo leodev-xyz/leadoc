@@ -1,5 +1,5 @@
 
-import fast_push, fast_iter, fast_extend from require "leadoc.util"
+import ensure_fast, fast_push, fast_iter, fast_find, fast_extend from "leadoc.util"
 
 
 export find_flag = (flag, value) =>
@@ -10,3 +10,18 @@ export find_flag = (flag, value) =>
 		fast_push matching, child.id if child.flags[flag]? and (not value? or child.flags[flag] == value)
 
 	matching
+
+
+export find_reference = (ref) =>
+	ensure_fast ref
+
+	i = 1
+	while ref.n >= i
+		searching = ref[i]
+
+		@ = fast_find @tree, => @data?.name == searching
+		return unless @?
+
+		i += 1
+
+	return @
