@@ -16,7 +16,7 @@ deep_ts_gen = (wr, doc, node, is_in_class) ->
 			content = table.concat description_to_string inner: node.data.description
 			if #content > 0
 				wr::writeln "/*"
-				wr::writelines content
+				wr::wrap -> wr::writelines content
 				wr::writeln "*/"
 		if node.flags.deprecated
 			wr::writeln "/* @deprecated */"
