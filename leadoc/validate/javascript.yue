@@ -2,78 +2,78 @@ import to_js from require "yue"
 import fast_push, fast_iter from require "leadoc.util"
 
 snippets = {
-    gather_reality: [[
+	gather_reality: [[
 var gatherReality;
 (function(){
-    var visited = new WeakSet();
-    var builtin = {};
-    var names = ["globalThis","console","setTimeout","clearTimeout","setInterval","clearInterval","process","require","module","exports","Promise","Number","String","Boolean","Object","Array","Math","Date","RegExp","JSON","Intl","Map","Set","WeakMap","WeakSet","Symbol","Reflect","Proxy", /* browser spec */ "atob", "btoa", "setImmediate", "clearImmediate", "fetch", "queueMicrotask", "structuredClone", /* node.js specifics */ "__dirname", "__filename"];
-    for (var i=0;i<names.length;i++) builtin[names[i] ] = true;
+	var visited = new WeakSet();
+	var builtin = {};
+	var names = ["globalThis","console","setTimeout","clearTimeout","setInterval","clearInterval","process","require","module","exports","Promise","Number","String","Boolean","Object","Array","Math","Date","RegExp","JSON","Intl","Map","Set","WeakMap","WeakSet","Symbol","Reflect","Proxy", /* browser spec */ "atob", "btoa", "setImmediate", "clearImmediate", "fetch", "queueMicrotask", "structuredClone", /* node.js specifics */ "__dirname", "__filename"];
+	for (var i=0;i<names.length;i++) builtin[names[i] ] = true;
 
-    gatherReality = function(obj, path, reality){
-        if (obj && typeof obj === "object") {
-            if (visited.has(obj)) return;
-            visited.add(obj);
-        }
-        for (var k in obj) {
-            try {
-                if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
-            } catch(e) { continue; }
-            if (builtin[k]) continue;
-            var v;
-            try { v = obj[k]; } catch(e) { continue; }
-            var t = typeof v;
-            if (t === "object") {
-                if (v === null) {
-                    reality[path + k] = "null";
-                } else if (Array.isArray(v)) {
-                    reality[path + k] = "array";
-                } else {
-                    gatherReality(v, path + k + ".", reality);
-                }
-            } else {
-                reality[path + k] = t;
-            }
-        }
-    };
+	gatherReality = function(obj, path, reality){
+		if (obj && typeof obj === "object") {
+			if (visited.has(obj)) return;
+			visited.add(obj);
+		}
+		for (var k in obj) {
+			try {
+				if (!Object.prototype.hasOwnProperty.call(obj, k)) continue;
+			} catch(e) { continue; }
+			if (builtin[k]) continue;
+			var v;
+			try { v = obj[k]; } catch(e) { continue; }
+			var t = typeof v;
+			if (t === "object") {
+				if (v === null) {
+					reality[path + k] = "null";
+				} else if (Array.isArray(v)) {
+					reality[path + k] = "array";
+				} else {
+					gatherReality(v, path + k + ".", reality);
+				}
+			} else {
+				reality[path + k] = t;
+			}
+		}
+	};
 })()
 ]] ,
 
-    compare: [[
+	compare: [[
 function compare(expected, reality){
-    var result = [];
-    var wrong = [];
-    for (var k in expected) {
-        if (Object.prototype.hasOwnProperty.call(expected, k)) {
-            var exp = expected[k];
-            var got = reality[k];
-            if (exp !== "any" && got !== exp) wrong.push(k);
-        }
-    }
-    wrong.sort();
-    for (var i=0;i<wrong.length;i++) {
-        var key = wrong[i];
-        result.push("TYPE MISMATCH: " + key + " (expected: " + expected[key] + ", got: " + (reality[key] || "nil") + ")");
-    }
-    var undocumented = [];
-    for (var k in reality) {
-        if (Object.prototype.hasOwnProperty.call(reality, k) && !(k in expected)) undocumented.push(k);
-    }
-    undocumented.sort();
-    for (var i=0;i<undocumented.length;i++) {
-        var key = undocumented[i];
-        result.push("UNDOCUMENTED: " + key + " (type: " + reality[key] + ")");
-    }
-    return result.join("\\n");
+	var result = [];
+	var wrong = [];
+	for (var k in expected) {
+		if (Object.prototype.hasOwnProperty.call(expected, k)) {
+			var exp = expected[k];
+			var got = reality[k];
+			if (exp !== "any" && got !== exp) wrong.push(k);
+		}
+	}
+	wrong.sort();
+	for (var i=0;i<wrong.length;i++) {
+		var key = wrong[i];
+		result.push("TYPE MISMATCH: " + key + " (expected: " + expected[key] + ", got: " + (reality[key] || "nil") + ")");
+	}
+	var undocumented = [];
+	for (var k in reality) {
+		if (Object.prototype.hasOwnProperty.call(reality, k) && !(k in expected)) undocumented.push(k);
+	}
+	undocumented.sort();
+	for (var i=0;i<undocumented.length;i++) {
+		var key = undocumented[i];
+		result.push("UNDOCUMENTED: " + key + " (type: " + reality[key] + ")");
+	}
+	return result.join("\\n");
 }
 ]] ,
 
-    final: [[
+	final: [[
 (function(expected){
-    var reality = {};
-    gatherReality(globalThis, "", reality);
-    var out = compare(expected, reality);
-    console.log(out);
+	var reality = {};
+	gatherReality(globalThis, "", reality);
+	var out = compare(expected, reality);
+	console.log(out);
 })(%s)
 ]]
 }
@@ -82,33 +82,33 @@ conversions = { integer: "number", float: "number", <index>: (v) => v }
 attach_name = {k, true for k in *{"namespace", "class"}}
 
 gather_expected = (expected, path) =>
-    if @type == "function"
-        expected["#{path}#{@data.name}"] = "function"
-    elseif @type == "variable"
-        if @data.type and @data.type.type
-            expected["#{path}#{@data.name}"] = conversions[@data.type.type.type]
-        else
-            expected["#{path}#{@data.name}"] = "any"
+	if @type == "function"
+		expected["#{path}#{@data.name}"] = "function"
+	elseif @type == "variable"
+		if @data.type and @data.type.type
+			expected["#{path}#{@data.name}"] = conversions[@data.type.type.type]
+		else
+			expected["#{path}#{@data.name}"] = "any"
 
-    if @tree.n > 0
-        child_path = if attach_name[@type] then "#{path}#{@data.name}." else path
-        for child in fast_iter @tree
-            continue if child.flags.dont_validate?
-            gather_expected child, expected, child_path
+	if @tree.n > 0
+		child_path = if attach_name[@type] then "#{path}#{@data.name}." else path
+		for child in fast_iter @tree
+			continue if child.flags.dont_validate?
+			gather_expected child, expected, child_path
 
 =>
-    expected = {}
-    gather_expected {tree: @}, expected, ""
+	expected = {}
+	gather_expected {tree: @}, expected, ""
 
-    encoded_parts = {n:0}
-    for key, value in pairs expected
-        fast_push encoded_parts, "%q: %q"::format key, value
-    encoded = "{#{table.concat encoded_parts, ", "}}"
+	encoded_parts = {n:0}
+	for key, value in pairs expected
+		fast_push encoded_parts, "%q: %q"::format key, value
+	encoded = "{#{table.concat encoded_parts, ", "}}"
 
-    table.concat {
-        "(function(expected){"
-        snippets.gather_reality
-        snippets.compare
-        snippets.final::format encoded
-        "})()"
-    }, "\n\n"
+	table.concat {
+		"(function(expected){"
+		snippets.gather_reality
+		snippets.compare
+		snippets.final::format encoded
+		"})()"
+	}, "\n\n"

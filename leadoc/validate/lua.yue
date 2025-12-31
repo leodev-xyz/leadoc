@@ -5,47 +5,47 @@ import fast_push, fast_peek, fast_del, fast_iter from require "leadoc.util"
 
 
 snippets = {
-    gather_reality: [[
+	gather_reality: [[
 local gather_reality
 do
-    visited = {}
-    builtin = {k, true for k in *{"_VERSION", "assert", "collectgarbage", "coroutine", "debug", "dofile", "error", "getmetatable", "io", "ipairs", "load", "loadfile", "math", "next", "os", "package", "pairs", "pcall", "print", "rawequal", "rawget", "rawlen", "rawset", "require", "select", "setmetatable", "string", "table", "tonumber", "tostring", "type", "utf8", "warn", "xpcall"}}
-    gather_reality = (tbl, path) =>
-        return if visited[@]
-        visited[@] = true
+	visited = {}
+	builtin = {k, true for k in *{"_VERSION", "assert", "collectgarbage", "coroutine", "debug", "dofile", "error", "getmetatable", "io", "ipairs", "load", "loadfile", "math", "next", "os", "package", "pairs", "pcall", "print", "rawequal", "rawget", "rawlen", "rawset", "require", "select", "setmetatable", "string", "table", "tonumber", "tostring", "type", "utf8", "warn", "xpcall"}}
+	gather_reality = (tbl, path) =>
+		return if visited[@]
+		visited[@] = true
 
-        for key, value in pairs @
-            continue if builtin[key]?
-            if "table" == type value
-                gather_reality value, tbl, "#{path}#{key}."
-            else
-                tbl["#{path}#{key}"] = type value
-    ]]
-    compare: [[
+		for key, value in pairs @
+			continue if builtin[key]?
+			if "table" == type value
+				gather_reality value, tbl, "#{path}#{key}."
+			else
+				tbl["#{path}#{key}"] = type value
+	]]
+	compare: [[
 compare = (expected, reality) ->
-    result = {}
-    result_n = 1
+	result = {}
+	result_n = 1
 
-    wrong = [k for k, v in pairs expected when reality[k] != expected[k] and expected[k] != "any"]
-    table.sort wrong
-    for key in *wrong
-        result[result_n] = "TYPE MISMATCH: #{key} (expected: #{expected[key]}, got: #{reality[key]})"
-        result_n += 1
+	wrong = [k for k, v in pairs expected when reality[k] != expected[k] and expected[k] != "any"]
+	table.sort wrong
+	for key in *wrong
+		result[result_n] = "TYPE MISMATCH: #{key} (expected: #{expected[key]}, got: #{reality[key]})"
+		result_n += 1
 
-    undocumented = [k for k, v in pairs reality when not expected[k]?]
-    table.sort undocumented
-    for key in *undocumented
-        result[result_n] = "UNDOCUMENTED: #{key} (type: #{reality[key]})"
-        result_n += 1
-    result
-    ]]
-    final: [[
+	undocumented = [k for k, v in pairs reality when not expected[k]?]
+	table.sort undocumented
+	for key in *undocumented
+		result[result_n] = "UNDOCUMENTED: #{key} (type: #{reality[key]})"
+		result_n += 1
+	result
+	]]
+	final: [[
 expected = %s
 reality = {}
 gather_reality _G, reality, ""
 result = compare expected, reality
 print table.concat result, "\n"
-    ]]
+	]]
 }
 
 
@@ -59,34 +59,34 @@ attach_name = {k, true for k in *{"namespace", "class"}}
 conversions = {integer: "number", float: "number", <index>: (v) => v}
 
 gather_expected = (expected, path) =>
-    if @type == "function"
-        expected["#{path}#{@data.name}"] = "function"
-    elseif @type == "variable"
-        if @data.type and @data.type.type
-            expected["#{path}#{@data.name}"] = conversions[@data.type.type.type]
-        else
-            expected["#{path}#{@data.name}"] = "any"
+	if @type == "function"
+		expected["#{path}#{@data.name}"] = "function"
+	elseif @type == "variable"
+		if @data.type and @data.type.type
+			expected["#{path}#{@data.name}"] = conversions[@data.type.type.type]
+		else
+			expected["#{path}#{@data.name}"] = "any"
 
-    if @tree.n > 0
-        child_path = if attach_name[@type] then "#{path}#{@data.name}." else path
-        for child in fast_iter @tree
-            continue if child.flags.dont_validate?
-            gather_expected child, expected, child_path
+	if @tree.n > 0
+		child_path = if attach_name[@type] then "#{path}#{@data.name}." else path
+		for child in fast_iter @tree
+			continue if child.flags.dont_validate?
+			gather_expected child, expected, child_path
 
 =>
-    expected = {}
-    gather_expected {tree: @}, expected, ""
+	expected = {}
+	gather_expected {tree: @}, expected, ""
 
-    encoded = {n: 0}
-    for key, value in pairs expected
-        fast_push encoded, "%q: %q"::format key, value
-    encoded = "{#{table.concat encoded, ", "}}"
+	encoded = {n: 0}
+	for key, value in pairs expected
+		fast_push encoded, "%q: %q"::format key, value
+	encoded = "{#{table.concat encoded, ", "}}"
 
 
-    script = table.concat {
-        snippets.gather_reality
-        snippets.compare
-        snippets.final::format encoded
-    }, "\n\n"
+	script = table.concat {
+		snippets.gather_reality
+		snippets.compare
+		snippets.final::format encoded
+	}, "\n\n"
 
-    to_lua script, reserve_line_number: false
+	to_lua script, reserve_line_number: false

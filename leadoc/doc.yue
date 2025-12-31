@@ -5,147 +5,147 @@ import fast_push, fast_peek, fast_del, fast_iter, fast_clone, deep_copy, flatten
 
 
 possible_parents = {
-    section: {
-        none: true
-        section: true
-    }
-    namespace: {
-        none: true
-        section: true
-        namespace: true
-    }
-    function: {
-        none: true
-        section: true
-        namespace: true
-        class: true
-    }
-    class: {
-        none: true
-        section: true
-        namespace: true
-    }
-    variable: {
-        none: true
-        section: true
-        namespace: true
-        class: true
-    }
-    type: {
-        variable: true
-    }
-    arg: {
-        function: true
-        class: true
-    }
-    returns: {
-        function: true
-    }
-    description: {
-        namespace: true
-        function: true
-        class: true
-        variable: true
-    }
-    text: {
-        none: true
-        section: true
-    }
+	section: {
+		none: true
+		section: true
+	}
+	namespace: {
+		none: true
+		section: true
+		namespace: true
+	}
+	function: {
+		none: true
+		section: true
+		namespace: true
+		class: true
+	}
+	class: {
+		none: true
+		section: true
+		namespace: true
+	}
+	variable: {
+		none: true
+		section: true
+		namespace: true
+		class: true
+	}
+	type: {
+		variable: true
+	}
+	arg: {
+		function: true
+		class: true
+	}
+	returns: {
+		function: true
+	}
+	description: {
+		namespace: true
+		function: true
+		class: true
+		variable: true
+	}
+	text: {
+		none: true
+		section: true
+	}
 }
 
 
 export class Documentation
-    new: =>
-        @stack = {n: 0}
-        @tree = {n: 0}
-        @flags = {}
-        @ids = {}
-        @highest_id = 0
-        @ref = {
-            <index>: (key) => "!#{key}"
-        }
+	new: =>
+		@stack = {n: 0}
+		@tree = {n: 0}
+		@flags = {}
+		@ids = {}
+		@highest_id = 0
+		@ref = {
+			<index>: (key) => "!#{key}"
+		}
 
-    _factory_section: (tos, name) => :name
-    _factory_namespace: (tos, name) => :name
-    _factory_function: (tos, name) => :name, arguments: {n: 0}
-    _factory_class: (tos, name) => :name, arguments: {n: 0}
-    _factory_variable: (tos, name) => :name
-    _factory_text: (tos, text) => :text
+	_factory_section: (tos, name) => :name
+	_factory_namespace: (tos, name) => :name
+	_factory_function: (tos, name) => :name, arguments: {n: 0}
+	_factory_class: (tos, name) => :name, arguments: {n: 0}
+	_factory_variable: (tos, name) => :name
+	_factory_text: (tos, text) => :text
 
-    _factory_type: (tos, type) =>
-        error "cannot have multiple types", 2 if tos.data.type?
-        tos.data.type = {type: parse_type type}
-    _factory_arg: (tos, name, type, default) =>
-        type = parse_type type
-        fast_push tos.data.arguments, :name, :type, :default
-    _factory_returns: (tos, type) =>
-        error "cannot have multiple return types", 2 if tos.data.returns?
-        tos.data.returns = {type: parse_type type}
-    _factory_description: (tos, description) =>
-        error "cannot have multiple descriptions", 2 if tos.data.description?
-        tos.data.description = description
+	_factory_type: (tos, type) =>
+		error "cannot have multiple types", 2 if tos.data.type?
+		tos.data.type = {type: parse_type type}
+	_factory_arg: (tos, name, type, default) =>
+		type = parse_type type
+		fast_push tos.data.arguments, :name, :type, :default
+	_factory_returns: (tos, type) =>
+		error "cannot have multiple return types", 2 if tos.data.returns?
+		tos.data.returns = {type: parse_type type}
+	_factory_description: (tos, description) =>
+		error "cannot have multiple descriptions", 2 if tos.data.description?
+		tos.data.description = description
 
-    section: (name, fn) => @_factory "section", fn, name
-    namespace: (name, fn) => @_factory "namespace", fn, name
-    function: (name, fn) => @_factory "function", fn, name
-    class: (name, fn) => @_factory "class", fn, name
-    variable: (name, fn) => @_factory "variable", fn, name
-    arg: (name, type, default, fn) => @_factory "arg", fn, name, type, default
-    type: (type, fn) => @_factory "type", fn, type
-    returns: (type, fn) => @_factory "returns", fn, type
-    description: (description, fn) => @_factory "description", fn, description
-    text: (text, fn) => @_factory "text", fn, text
-    flag: (flag, value) =>
-        holder = if @stack.n > 0 then @ids[fast_peek @stack] else @
-        holder.flags[flag] = value or true
+	section: (name, fn) => @_factory "section", fn, name
+	namespace: (name, fn) => @_factory "namespace", fn, name
+	function: (name, fn) => @_factory "function", fn, name
+	class: (name, fn) => @_factory "class", fn, name
+	variable: (name, fn) => @_factory "variable", fn, name
+	arg: (name, type, default, fn) => @_factory "arg", fn, name, type, default
+	type: (type, fn) => @_factory "type", fn, type
+	returns: (type, fn) => @_factory "returns", fn, type
+	description: (description, fn) => @_factory "description", fn, description
+	text: (text, fn) => @_factory "text", fn, text
+	flag: (flag, value) =>
+		holder = if @stack.n > 0 then @ids[fast_peek @stack] else @
+		holder.flags[flag] = value or true
 
-    _factory: (type, fn, ...) =>
-        expect_type 2, fn, "function", "nil"
-        local tos
-        if @stack.n > 0
-            tos = @ids[fast_peek @stack]
-            error "#{type} cannot be a descendent of #{tos.type}" unless possible_parents[type][tos.type]
-        else
-            error "#{type} must be a descenedet of something" unless possible_parents[type].none
+	_factory: (type, fn, ...) =>
+		expect_type 2, fn, "function", "nil"
+		local tos
+		if @stack.n > 0
+			tos = @ids[fast_peek @stack]
+			error "#{type} cannot be a descendent of #{tos.type}" unless possible_parents[type][tos.type]
+		else
+			error "#{type} must be a descenedet of something" unless possible_parents[type].none
 
-        fdata = @["_factory_#{type}"] @, tos, ...
-        data = {
-            :type
-            stack: fast_clone @stack
-            tree: {n: 0}
-            data: fdata
-            flags: {}
-        }
-        if fdata?
-            -- "permanent" data
-            -- something like "@flag" changes the parent, but doesn't leave actual data
-            -- so don't store it
-            data.id = @highest_id
-            @highest_id += 1
-            @ids[data.id] = data
+		fdata = @["_factory_#{type}"] @, tos, ...
+		data = {
+			:type
+			stack: fast_clone @stack
+			tree: {n: 0}
+			data: fdata
+			flags: {}
+		}
+		if fdata?
+			-- "permanent" data
+			-- something like "@flag" changes the parent, but doesn't leave actual data
+			-- so don't store it
+			data.id = @highest_id
+			@highest_id += 1
+			@ids[data.id] = data
 
-            if @stack.n == 0
-                fast_push @tree, data
-            else
-                fast_push @ids[fast_peek @stack].tree, data
-        if fn?
-            fast_push @stack, data.id or -1
-            fn @, data, tos
-            fast_del @stack
-        data
+			if @stack.n == 0
+				fast_push @tree, data
+			else
+				fast_push @ids[fast_peek @stack].tree, data
+		if fn?
+			fast_push @stack, data.id or -1
+			fn @, data, tos
+			fast_del @stack
+		data
 
-    clone: =>
-        new = @@!
-        new.description = @description
-        new.flags = {k, v for k, v in pairs @flags}
-        new.highest_id = @highest_id
-        new.stack = @stack
+	clone: =>
+		new = @@!
+		new.description = @description
+		new.flags = {k, v for k, v in pairs @flags}
+		new.highest_id = @highest_id
+		new.stack = @stack
 
-        new.tree = deep_copy @tree
-        flattened = flatten_tree new.tree
-        new.ids[thing.id] = thing for thing in fast_iter flattened
+		new.tree = deep_copy @tree
+		flattened = flatten_tree new.tree
+		new.ids[thing.id] = thing for thing in fast_iter flattened
 
 
 export doc = (...) =>
-    with d := Documentation!
-        @ d, ...
+	with d := Documentation!
+		@ d, ...

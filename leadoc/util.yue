@@ -1,96 +1,96 @@
 
 -- Fast Table
 export fast_push = (tbl, item) ->
-    tbl[tbl.n + 1] = item
-    tbl.n += 1
+	tbl[tbl.n + 1] = item
+	tbl.n += 1
 export fast_peek = => @[@n]
 export fast_del = =>
-    @[@n] = nil
-    @n -= 1
+	@[@n] = nil
+	@n -= 1
 export fast_pop = =>
-    p = @[@n]
-    @[@n] = nil
-    @n -= 1
-    p
+	p = @[@n]
+	@[@n] = nil
+	@n -= 1
+	p
 export fast_extend = (other) =>
-    return if other.n == 0
-    n = @n
-    @[n + i] = other[i] for i = 1, other.n
-    @n += other.n
+	return if other.n == 0
+	n = @n
+	@[n + i] = other[i] for i = 1, other.n
+	@n += other.n
 export fast_iter = =>
-    error "unable to iter non-fast table" unless @n?
-    i = 0
-    ->
-        i += 1
-        i <= @n and @[i] or nil
+	error "unable to iter non-fast table" unless @n?
+	i = 0
+	->
+		i += 1
+		i <= @n and @[i] or nil
 export fast_filter = (cb) =>
-    r = {}
-    j = 1
-    for i = 1, @n
-        continue unless cb @[i]
-        r[j] = @[i]
-        j += 1
-    r.n = j - 1
-    r
+	r = {}
+	j = 1
+	for i = 1, @n
+		continue unless cb @[i]
+		r[j] = @[i]
+		j += 1
+	r.n = j - 1
+	r
 export fast_map = (cb) =>
-    r = {n: @n}
-    r[i] = cb @[i] for i = 1, @n
-    r
+	r = {n: @n}
+	r[i] = cb @[i] for i = 1, @n
+	r
 export fast_clone = =>
-    r = {n: @n}
-    r[i] = @[i] for i = 1, @n
-    r
+	r = {n: @n}
+	r[i] = @[i] for i = 1, @n
+	r
 
 export print_tbl = (dept = 0) =>
-    print! if dept == 0
-    for k, v in pairs @
-        if "table" == type v
-            print "#{"  "::rep dept}#{k}:"
-            print_tbl v, dept + 1
-        else
-            print "#{"  "::rep dept}#{k}: #{"%q"::format v}"
+	print! if dept == 0
+	for k, v in pairs @
+		if "table" == type v
+			print "#{"  "::rep dept}#{k}:"
+			print_tbl v, dept + 1
+		else
+			print "#{"  "::rep dept}#{k}: #{"%q"::format v}"
 
 
 export remove_stack = =>
-    @stack = nil
-    if @tree
-        remove_stack child for child in fast_iter @tree
+	@stack = nil
+	if @tree
+		remove_stack child for child in fast_iter @tree
 
 
 export deep_copy = =>
-    return @ if "table" != type @
-    {(deep_copy k), deep_copy v for k, v in pairs @}
+	return @ if "table" != type @
+	{(deep_copy k), deep_copy v for k, v in pairs @}
 
 
 export flatten_tree = =>
-    return {@, n: 1} unless @tree?
-    result = {n: 0}
-    fast_extend result, flatten_tree child for child in fast_iter @tree
-    result
+	return {@, n: 1} unless @tree?
+	result = {n: 0}
+	fast_extend result, flatten_tree child for child in fast_iter @tree
+	result
 
 export expect_type = (index, value, ...) ->
-    allowed_types = {...}
-    allowed_types.n = #allowed_types
+	allowed_types = {...}
+	allowed_types.n = #allowed_types
 
-    type_to_check = type value
-    for allowed_type in fast_iter allowed_types
-        return value if allowed_type == type_to_check
+	type_to_check = type value
+	for allowed_type in fast_iter allowed_types
+		return value if allowed_type == type_to_check
 
-    -- Not allowed type
+	-- Not allowed type
 
-    -- Try to get functon name
-    ok, info = pcall debug.getinfo, 3, "nS"
+	-- Try to get functon name
+	ok, info = pcall debug.getinfo, 3, "nS"
 
-    name = ok and info.name and info.name != "" and info.what != "C" and info.name
+	name = ok and info.name and info.name != "" and info.what != "C" and info.name
 
-    local expected
-    if allowed_types.n == 1
-        expected = allowed_types[1]
-    else
-        expected = (table.concat [x for x in *allowed_types[,allowed_types.n - 1]], ", ") .. fast_peek allowed_types
+	local expected
+	if allowed_types.n == 1
+		expected = allowed_types[1]
+	else
+		expected = (table.concat [x for x in *allowed_types[,allowed_types.n - 1]], ", ") .. fast_peek allowed_types
 
-    if name
-        error "bad argument #%d to %q (expected %s, got %s)"::format index, name, expected, type_to_check
-    else
-        error "bad argument #%d (expected %s, got %s)"::format index, expected, type_to_check
+	if name
+		error "bad argument #%d to %q (expected %s, got %s)"::format index, name, expected, type_to_check
+	else
+		error "bad argument #%d (expected %s, got %s)"::format index, expected, type_to_check
 

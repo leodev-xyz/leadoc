@@ -3,10 +3,10 @@ import fast_push, fast_iter, fast_extend from require "leadoc.util"
 
 
 export find_flag = (flag, value) =>
-    matching = {n: 0}
+	matching = {n: 0}
 
-    for child in fast_iter @tree
-        fast_extend matching, find_flag child, flag, value if child.tree?
-        fast_push matching, child.id if child.flags[flag]? and (not value? or child.flags[flag] == value)
+	for child in fast_iter @tree
+		fast_extend matching, find_flag child, flag, value if child.tree?
+		fast_push matching, child.id if child.flags[flag]? and (not value? or child.flags[flag] == value)
 
-    matching
+	matching
