@@ -5,5 +5,6 @@
 - [ ] Lint
 
   - [ ] Duplicate References
+  - [ ] Incorrect References
 
-- [x] Replace `*table` with `fast_iter table` whereever possible
+- Fix description of args/return value.
