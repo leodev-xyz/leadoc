@@ -56,7 +56,7 @@ print table.concat result, "\n"
 
 
 attach_name = {k, true for k in *{"namespace", "class"}}
-conversions = {integer: "number", float: "number", index#: (v) => v}
+conversions = {integer: "number", float: "number", <index>: (v) => v}
 
 gather_expected = (expected, path) =>
     if @type == "function"
@@ -90,5 +90,3 @@ gather_expected = (expected, path) =>
     }, "\n\n"
 
     to_lua script, reserve_line_number: false
-
-

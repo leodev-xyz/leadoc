@@ -1,6 +1,6 @@
 
-import find_flag from require "leadoc.find"
-import fast_push, fast_peek, fast_del, fast_iter, fast_clone, deep_copy, flatten_tree, expect_type from require "leadoc.util"
+import find_flag from "leadoc.find"
+import fast_push, fast_peek, fast_del, fast_iter, fast_clone, deep_copy, flatten_tree, expect_type from "leadoc.util"
 
 
 possible_parents = {
@@ -81,7 +81,7 @@ export class Documentation
         @ids = {}
         @highest_id = 0
         @ref = {
-            index#: (key) => "!#{key}"
+            <index>: (key) => "!#{key}"
         }
 
     _factory_section: (tos, name) => :name
@@ -182,5 +182,5 @@ export fmt = {
 
 
 export doc = (...) =>
-    with d = Documentation!
+    with d := Documentation!
         @ d, ...

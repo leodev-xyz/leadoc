@@ -1,3 +1,5 @@
+-- Not 100% sure why the current directory is not in the package path by default
+package.path = "?.lua;" .. package.path
 
 import "leadoc.doc" as leadoc
 import "leadoc.converter.snippets"
@@ -195,7 +197,7 @@ describe "leadoc", ->
 
             local result
             env = {
-                index#: _G
+                <index>: _G
                 test: {
                     testf_1: ->
                     testf_2: "test"
