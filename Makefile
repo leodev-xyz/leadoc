@@ -9,7 +9,7 @@ compile: $(objects)
 $(objects): %.lua: %.yue
 	yue $<
 
-test: compile
+test: clean
 	yue -e tests.yue
 
 clean:
