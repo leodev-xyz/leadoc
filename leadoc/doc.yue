@@ -102,8 +102,10 @@ export class Documentation
 	_factory: (type, fn, ...) =>
 		expect_type 2, fn, "function", "nil"
 		local tos
+		error "#{type} is not a valid documentation type" unless possible_parents[type]?
 		if @stack.n > 0
 			tos = @ids[fast_peek @stack]
+			error "the stack is corrupted" unless tos?
 			error "#{type} cannot be a descendent of #{tos.type}" unless possible_parents[type][tos.type]
 		else
 			error "#{type} must be a descendent of something" unless possible_parents[type].none
