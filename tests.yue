@@ -5,6 +5,7 @@ import "leadoc.fmt"
 import parse_type from "leadoc.type"
 import "leadoc.gen.snippets"
 import "leadoc.gen.tsd"
+import "leadoc.gen.html"
 import "leadoc.validate.lua" as validate_lua
 import "leadoc.validate.javascript" as validate_javascript
 import "leadoc.find"
@@ -421,7 +422,7 @@ describe "leadoc", ->
 				results = find.find_flag doc, "test"
 				expect.equal results, {test.id, test2.id, n: 2}
 
-	describe "converter", ->
+	describe "gen", ->
 		it "snippets", ->
 			doc = leadoc.doc =>
 				@namespace "test", ->
@@ -500,6 +501,46 @@ describe "leadoc", ->
 			for line in result::gmatch "[^\n]+"
 				expect.equal line, lines[i]
 				i += 1
+
+		it "html", ->
+				doc = leadoc.doc =>
+						@namespace "test", ->
+								@description "A test namespace"
+								@function "testFunc", ->
+										@description "A test function"
+										@arg "param1", "string"
+										@arg "param2", "?number"
+										@returns "boolean"
+								@variable "testVar", ->
+										@description "A test variable"
+										@type "string"
+								@class "TestClass", ->
+										@description "A test class"
+										@arg "option", "string"
+										@function "method", ->
+												@description "A class method"
+
+				local html = html.generate_html doc
+
+				-- Check for namespace heading
+				expect.truthy html::match "<h2[^>]*>.-<b>test</b>"
+
+				-- Check for function with arguments
+				expect.truthy html::match "<h3[^>]*>.-<b>testFunc</b>%(param1, param2%)"
+
+				-- Check for parameter types
+				expect.truthy html::match "param1.*:.*string"
+				expect.truthy html::match "param2.*:.*number.*%(optional%)"
+
+				-- Check for returns
+				expect.truthy html::match "Returns:.*boolean"
+
+				-- Check for variable with type
+				expect.truthy html::match "<h3[^>]*>.-<b>testVar</b>"
+				expect.truthy html::match "Type:.*string"
+
+				-- Check for class
+				expect.truthy html::match "<h2[^>]*>.-<b>TestClass</b>%(option%)"
 
 report!
 exit
