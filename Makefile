@@ -1,9 +1,16 @@
+.PHONY: all compile test clean
 
-compile:
-	yue leadoc
+objects = $(patsubst %.yue,%.lua,$(wildcard leadoc/*.yue leadoc/**/*.yue))
 
-test:
+all: compile
+
+compile: $(objects)
+
+$(objects): %.lua: %.yue
+	yue $<
+
+test: compile
 	yue -e tests.yue
 
 clean:
-	rm -f leadoc/**.lua
+	rm -f leadoc/**/*.lua leadoc/*.lua
