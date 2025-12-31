@@ -5,13 +5,18 @@ import "leadoc.doc" as leadoc
 import "leadoc.converter.snippets"
 import "leadoc.converter.tsd"
 import "leadoc.validate.lua" as validate_lua
+import "leadoc.validate.javascript" as validate_javascript
 import "leadoc.find"
 import "leadoc.json"
 -- import "leadoc.lint"
-import fast_push, fast_peek, fast_pop, fast_del, fast_iter, fast_extend from require "leadoc.util"
+import fast_push, fast_peek, fast_pop, fast_del, fast_iter, fast_extend from "leadoc.util"
 
+import describe, it, expect, report, exit from "lester"
 
-import describe, it, expect, report, exit from require "lester"
+is_installed = =>
+    return false unless os and os.execute and io and io.popen
+    ok, _, _ = os.execute "which #{@} > /dev/null 2>&1"
+    ok == true
 
 
 describe "leadoc", ->
@@ -177,24 +182,24 @@ describe "leadoc", ->
             expect.equal type, {type: {{type: "test1", array: false, optional: false}, {type: "test2", array: false, optional: false}}, array: true, optional: false}
 
     describe "validate", ->
-        it "validate", ->
-            doc = leadoc.doc =>
-                @namespace "test", ->
-                    @function "testf_1"
-                    @function "testf_2"
-                    @function "testf_3"
-                    @variable "testv_1"
-                    @variable "testv_2", ->
-                        @type "string"
-                    @variable "testv_3", ->
-                        @type "number"
-                    @variable "testv_4"
-                    @function "not_checked", ->
-                        @flag "dont_validate"
-                @namespace "test2", ->
+        doc = leadoc.doc =>
+            @namespace "test", ->
+                @function "testf_1"
+                @function "testf_2"
+                @function "testf_3"
+                @variable "testv_1"
+                @variable "testv_2", ->
+                    @type "string"
+                @variable "testv_3", ->
+                    @type "number"
+                @variable "testv_4"
+                @function "not_checked", ->
                     @flag "dont_validate"
-                    @function "not_checked"
+            @namespace "test2", ->
+                @flag "dont_validate"
+                @function "not_checked"
 
+        it "lua", ->
             local result
             env = {
                 <index>: _G
@@ -230,6 +235,39 @@ describe "leadoc", ->
                 "UNDOCUMENTED: test.undocumented (type: boolean)"
             }
             expect.equal expected, output
+
+        has_node = is_installed "node"
+        it "javascript", (->
+            setup = table.concat {
+                "test = {"
+                "\ttestf_1: function() {},"
+                "\ttestf_2: 'test',"
+                "\t//testf_3 is missing"
+                "\ttestv_1: true,"
+                "\ttestv_2: 'test',"
+                "\ttestv_3: 'test',"
+                "\t//testv_4 is missing"
+                "\tundocumented: true"
+                "};"
+            }, "\n"
+
+            code = setup .. "\n" .. validate_javascript doc.tree
+
+            local output
+            with io.popen 'node -e "' .. code::gsub('"', '\\"') .. '"', "r"
+                output = ::read "*a"
+                ::close!
+
+            output_lines = [x for x in output::gmatch "[^\n]+"]
+            expected = {
+                "TYPE MISMATCH: test.testf_2 (expected: function, got: string)"
+                "TYPE MISMATCH: test.testf_3 (expected: function, got: nil)"
+                "TYPE MISMATCH: test.testv_3 (expected: number, got: string)"
+                "UNDOCUMENTED: test.undocumented (type: boolean)"
+            }
+            expect.equal expected, output_lines
+
+        ), has_node
 
     describe "json", ->
         describe "stringify", ->
