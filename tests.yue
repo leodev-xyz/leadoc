@@ -98,7 +98,7 @@ describe "leadoc", ->
 				expect.equal doc.tree[1].flags, {test: true}
 
 		it "global description fail", ->
-			expect.fail (-> leadoc.doc => @description "test"), "description must be a descenedet of something"
+			expect.fail (-> leadoc.doc => @description "test"), "description must be a descendent of something"
 
 
 	describe "fmt", ->

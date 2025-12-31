@@ -106,7 +106,7 @@ export class Documentation
 			tos = @ids[fast_peek @stack]
 			error "#{type} cannot be a descendent of #{tos.type}" unless possible_parents[type][tos.type]
 		else
-			error "#{type} must be a descenedet of something" unless possible_parents[type].none
+			error "#{type} must be a descendent of something" unless possible_parents[type].none
 
 		fdata = @["_factory_#{type}"] @, tos, ...
 		data = {
