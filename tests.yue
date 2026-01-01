@@ -467,40 +467,51 @@ describe "leadoc", ->
 				}
 			}
 
-		it "typescript definition", ->
-			doc = leadoc.doc =>
-				@flag "globals"
-				@namespace "test", ->
-					@function "test", ->
-						@arg "test", "string"
-						@arg "test2", "[]number"
-						@arg "test3", "[number, number]"
-						@arg "test4", "?integer"
-						@returns "string"
-					@variable "test2", ->
-						@type "string"
-					@function "test3"
-				@namespace "test2", ->
-					@flag "dont_include_in_definition"
-					@function "not_included"
+		describe "typescript definition", ->
+			it "typescript definition", ->
+				doc = leadoc.doc =>
+					@flag "globals"
+					@namespace "test", ->
+						@function "test", ->
+							@arg "test", "string"
+							@arg "test2", "[]number"
+							@arg "test3", "[number, number]"
+							@arg "test4", "?integer"
+							@returns "string"
+						@variable "test2", ->
+							@type "string"
+						@function "test3"
+					@namespace "test2", ->
+						@flag "dont_include_in_definition"
+						@function "not_included"
 
-			result = tsd.generate_typescript doc
-			lines = {
-				"export {}"
-				"type integer = number;"
-				"type float = number;"
-				"declare global {"
-				"\tnamespace test {"
-				"\t\tfunction test(test: string, test2: Array<number>, test3: [number, number], test4: integer | undefined): string;"
-				"\t\tlet test2: string;"
-				"\t\tfunction test3(): void;"
-				"\t}"
-				"}"
-			}
-			i = 1
-			for line in result::gmatch "[^\n]+"
-				expect.equal line, lines[i]
-				i += 1
+				result = tsd.generate_typescript doc
+				lines = {
+					"export {}"
+					"type integer = number;"
+					"type float = number;"
+					"declare global {"
+					"\tnamespace test {"
+					"\t\tfunction test(test: string, test2: Array<number>, test3: [number, number], test4: integer | undefined): string;"
+					"\t\tlet test2: string;"
+					"\t\tfunction test3(): void;"
+					"\t}"
+					"}"
+				}
+				i = 1
+				for line in result::gmatch "[^\n]+"
+					expect.equal line, lines[i]
+					i += 1
+
+			it "... rest argument edge case", ->
+				doc = leadoc.doc =>
+					@flag "globals"
+					@namespace "test", ->
+						@function "test", ->
+							@arg "...", "[]string"
+
+				result = tsd.generate_typescript doc
+				expect.truthy result::match "(...rest: Array<string>)"
 
 		it "html", ->
 				doc = leadoc.doc =>
