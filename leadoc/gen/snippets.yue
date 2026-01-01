@@ -28,7 +28,7 @@ export configs =
 namespacing_nodes = {namespace: true, class: true}
 normalize_string = => @gsub "[^a-zA-Z0-9]", ""
 
-export generate_snippet = (doc, config) ->
+export generate_snippets = (doc, config) ->
 	result = {}
 	nodes = gather_nodes {tree: doc.tree}
 	for thing in fast_iter nodes
