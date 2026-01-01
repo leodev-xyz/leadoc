@@ -13,7 +13,7 @@ escape_html = (str) ->
 		::gsub "\n", "<br>"
 	v
 
-h = (body, attr={}) =>
+export h = (body, attr={}) =>
 	return table.concat([(if "table" == type x then h x else x) for x in *@ when x], "") if "table" == type @
 	-- attr = {} if "table" != type attr
 
