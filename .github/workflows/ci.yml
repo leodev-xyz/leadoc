@@ -1,0 +1,19 @@
+name: CI
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Yuescript
+        run: |
+          git clone https://github.com/IppClub/YueScript.git
+          pushd YueScript
+          make install
+          popd
+
+      - name: Run tests
+        run: |
+          make test
