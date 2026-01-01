@@ -513,6 +513,16 @@ describe "leadoc", ->
 				result = tsd.generate_typescript doc
 				expect.truthy result::match "(...rest: Array<string>)"
 
+			it "invalid prop name", ->
+				doc = leadoc.doc =>
+					@flag "globals"
+					@namespace "test", ->
+						@variable "invalid-prop.name", ->
+							@type "string"
+
+				result = tsd.generate_typescript doc
+				expect.truthy result::match 'let "invalid%-prop%.name": string;'
+
 		it "html", ->
 				doc = leadoc.doc =>
 						@namespace "test", ->
