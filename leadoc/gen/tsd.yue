@@ -8,7 +8,7 @@ ts_name = =>
 	@ ..= "rest" if @ == "..."
 	@
 ts_prop = =>
-	@ = "%q"::format @ if @match "^[a-zA-Z_][a-zA-Z0-9_]*$"
+	@ = "%q"::format @ unless @match "^[a-zA-Z_][a-zA-Z0-9_]*$"
 	@
 
 deep_ts_gen = (wr, doc, node, is_in_class) ->
