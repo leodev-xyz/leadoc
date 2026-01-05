@@ -141,6 +141,14 @@ deep_html_gen = (doc, node, name_stack) ->
 				")"
 			}, {id: node.id}
 
+		when "typedef"
+			inherit_name = node.data.name
+			fast_push c, h "h2", {
+				table.concat name_stack, "."
+				name_stack.n > 0 and "."
+				h "b", node.data.name
+			}, {id: node.id}
+
 	if node.flags.deprecated
 		fast_push c, h "mark", "Deprecated"
 
@@ -166,7 +174,7 @@ deep_html_gen = (doc, node, name_stack) ->
 				n: 1
 			}
 
-		when "variable"
+		when "variable", "typedef"
 			if node.data.type
 				fast_push c, h "div",
 					* h "b", "Type: "

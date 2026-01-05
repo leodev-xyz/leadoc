@@ -25,6 +25,11 @@ possible_parents = {
 		section: true
 		namespace: true
 	}
+	typedef: {
+		none: true
+		section: true
+		namespace: true
+	}
 	variable: {
 		none: true
 		section: true
@@ -32,6 +37,7 @@ possible_parents = {
 		class: true
 	}
 	type: {
+		typedef: true
 		variable: true
 	}
 	arg: {
@@ -45,6 +51,7 @@ possible_parents = {
 		namespace: true
 		function: true
 		class: true
+		typedef: true
 		variable: true
 	}
 	text: {
@@ -69,6 +76,7 @@ export class Documentation
 	_factory_namespace: (tos, name) => :name
 	_factory_function: (tos, name) => :name, arguments: {n: 0}
 	_factory_class: (tos, name) => :name, arguments: {n: 0}
+	_factory_typedef: (tos, name) => :name
 	_factory_variable: (tos, name) => :name
 	_factory_text: (tos, text) => :text
 
@@ -89,6 +97,7 @@ export class Documentation
 	namespace: (name, fn) => @_factory "namespace", fn, name
 	function: (name, fn) => @_factory "function", fn, name
 	class: (name, fn) => @_factory "class", fn, name
+	typedef: (name, fn) => @_factory "typedef", fn, name
 	variable: (name, fn) => @_factory "variable", fn, name
 	arg: (name, type, default, fn) => @_factory "arg", fn, name, type, default
 	type: (type, fn) => @_factory "type", fn, type

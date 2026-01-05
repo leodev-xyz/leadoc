@@ -49,7 +49,8 @@ deep_ts_gen = (wr, doc, node, is_in_class) ->
 				wr::wrap -> wr::writeln "constructor(#{args_with_types});"
 				incr = true
 				is_in_class = true
-
+			when "typedef"
+				wr::writeln "type #{node.data.name} = #{type_to_string node.data.type.type, true};"
 
 	wr::incr! if incr
 	deep_ts_gen wr, doc, child, is_in_class for child in fast_iter node.tree
