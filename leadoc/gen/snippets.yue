@@ -24,6 +24,13 @@ export configs =
 		return_prefix: " -> "
 		scope: "moonscript,yuescript"
 		class_init: ""
+	javascript:
+		argument_start: "("
+		argument_close: ")"
+		no_arguments: "()"
+		return_prefix: ": "
+		scope: "javascript,typescript"
+		class_init: "new "
 
 namespacing_nodes = {namespace: true, class: true}
 normalize_string = => @gsub "[^a-zA-Z0-9]", ""
