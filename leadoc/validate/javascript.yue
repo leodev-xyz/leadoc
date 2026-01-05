@@ -32,6 +32,10 @@ var gatherReality;
 					gatherReality(v, path + k + ".", reality);
 				}
 			} else {
+				if (t === "function") {
+				  // gather function argument count
+					t += ";" + (v.length || 0);
+				}
 				reality[path + k] = t;
 			}
 		}
@@ -83,7 +87,7 @@ attach_name = {k, true for k in *{"namespace", "class"}}
 
 gather_expected = (expected, path) =>
 	if @type == "function"
-		expected["#{path}#{@data.name}"] = "function"
+		expected["#{path}#{@data.name}"] = "function;#{@data.arguments.n}"
 	elseif @type == "variable"
 		if @data.type and @data.type.type
 			expected["#{path}#{@data.name}"] = conversions[@data.type.type.type]

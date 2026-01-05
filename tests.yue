@@ -245,6 +245,7 @@ describe "leadoc", ->
 				"\ttestf_1: function() {},"
 				"\ttestf_2: 'test',"
 				"\t//testf_3 is missing"
+				"\ttestf_4: function(a, b) {},"
 				"\ttestv_1: true,"
 				"\ttestv_2: 'test',"
 				"\ttestv_3: 'test',"
@@ -262,9 +263,10 @@ describe "leadoc", ->
 
 			output_lines = [x for x in output::gmatch "[^\n]+"]
 			expected = {
-				"TYPE MISMATCH: test.testf_2 (expected: function, got: string)"
-				"TYPE MISMATCH: test.testf_3 (expected: function, got: nil)"
+				"TYPE MISMATCH: test.testf_2 (expected: function;0, got: string)"
+				"TYPE MISMATCH: test.testf_3 (expected: function;0, got: nil)"
 				"TYPE MISMATCH: test.testv_3 (expected: number, got: string)"
+				"UNDOCUMENTED: test.testf_4 (type: function;2)"
 				"UNDOCUMENTED: test.undocumented (type: boolean)"
 			}
 			expect.equal expected, output_lines
